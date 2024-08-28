@@ -1,0 +1,5 @@
+from enrichment_agent.configuration import Configuration
+
+
+def test_configuration_from_none():
+    Configuration.from_runnable_config()

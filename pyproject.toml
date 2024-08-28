@@ -1,24 +1,36 @@
-[tool.poetry]
-name = "react-agent"
+[project]
+name = "lgtemplate-enrichment-agent"
 version = "0.0.1"
-description = "Starter template for making a custom Reasoning and Action agent (using tool calling) in LangGraph."
-authors = ["William Fu-Hinthorn <13333726+hinthornw@users.noreply.github.com>"]
-license = "MIT"
+description = "An agent that populates and enriches custom schemas"
+authors = [
+    { name = "William Fu-Hinthorn", email = "13333726+hinthornw@users.noreply.github.com" },
+]
+license = { text = "MIT" }
 readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "langgraph>=0.2.6",
+    "langchain-openai>=0.1.22",
+    "langchain-anthropic>=0.1.23",
+    "langchain>=0.2.14",
+    "langchain-fireworks>=0.1.7",
+    "python-dotenv>=1.0.1",
+    "langchain-community>=0.2.13",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-langgraph = "^0.2.6"
-langchain-openai = "^0.1.22"
-langchain-anthropic = "^0.1.23"
-langchain = "^0.2.14"
-langchain-fireworks = "^0.1.7"
-python-dotenv = "^1.0.1"
-
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.11.1"
-ruff = "^0.6.1"
+[project.optional-dependencies]
+dev = ["mypy>=1.11.1", "ruff>=0.6.1", "pytest-asyncio"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=73.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
