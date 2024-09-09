@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, List, Optional, TypedDict, Annotated
 from langchain_core.messages import BaseMessage
 from langgraph.graph import add_messages
@@ -10,10 +11,34 @@ class InputState(TypedDict):
     "The info state tracks the current extracted data for the given topic, conforming to the provided schema."
 
 
+class InfoLocation(BaseModel):
+    city: str = Field(description="city in which the company is located")
+    state: str = Field(description="state in which the company is located")
+    country: str = Field(description="country in which the company is located")
+
+class OrganizationType(str, Enum):
+    private = "private"
+    public = "public"
+    non_profit = "non-profit"
+    government = "government"
+    educational = "educational"
+    other = "other"
+
+
 class Info(BaseModel):
     """Information to """
-    ceo: str
-    revenue: int = Field(description="revenue in millions")
+    ceo: str = Field(description="CEO of the company")
+    organization_type: OrganizationType = Field(description="type of organization - public, private, educational, etc.")
+    revenue: int | None = Field(description="revenue in millions, or null if this is not public information")
+    name: str = Field(description="Full name of the company")
+    description: str = Field(description="description of the company - what they do")
+    industry: str = Field(description="industry the company is in")
+    size: int = Field(description="number of employees")
+    funding: int | None = Field(description="Total raised funding in millions, if the company is private")
+    location: InfoLocation = Field(description="location of the company")
+    investors: List[str] | None = Field(description="list of investors: for example, VC firms or angels")
+    quality: int = Field(description="quality of the company as a partner on a scale of 1-10. Base this on how legitimate the company is, how much usage they have, how they are viewed by peers, how fast-moving they are, and how cutting-edge their technology is. This should be a subjective score that would inform a rising startup how much they should consider partnering with this company.")
+
 
 
 class State(InputState):
