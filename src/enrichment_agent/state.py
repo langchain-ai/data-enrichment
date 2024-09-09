@@ -25,6 +25,11 @@ class OrganizationType(str, Enum):
     other = "other"
 
 
+class QualityInfo(BaseModel):
+    quality_reasoning: str = Field(description="Reasoning about the quality of the company as a partner. Base this on how legitimate the company is, how much usage they have, how they are viewed by peers, how fast-moving they are, and how cutting-edge their technology is. This should be a subjective score that would inform a rising startup how much they should consider partnering with this company.")
+    quality_score: int = Field(description="quality of the company as a partner on a scale of 1-10. Base this on how legitimate the company is, how much usage they have, how they are viewed by peers, how fast-moving they are, and how cutting-edge their technology is. This should be a subjective score that would inform a rising startup how much they should consider partnering with this company.")
+
+
 class Info(BaseModel):
     """Information to """
     ceo: str = Field(description="CEO of the company")
@@ -37,7 +42,7 @@ class Info(BaseModel):
     funding: int | None = Field(description="Total raised funding in millions, if the company is private")
     location: InfoLocation = Field(description="location of the company")
     investors: List[str] | None = Field(description="list of investors: for example, VC firms or angels")
-    quality: int = Field(description="quality of the company as a partner on a scale of 1-10. Base this on how legitimate the company is, how much usage they have, how they are viewed by peers, how fast-moving they are, and how cutting-edge their technology is. This should be a subjective score that would inform a rising startup how much they should consider partnering with this company.")
+    quality_info: QualityInfo = Field(description="quality of the company as a partner on a scale of 1-10. Base this on how legitimate the company is, how much usage they have, how they are viewed by peers, how fast-moving they are, and how cutting-edge their technology is. This should be a subjective score that would inform a rising startup how much they should consider partnering with this company.")
 
 
 
