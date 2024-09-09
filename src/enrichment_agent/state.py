@@ -1,14 +1,19 @@
 from typing import Any, List, Optional, TypedDict, Annotated
 from langchain_core.messages import BaseMessage
 from langgraph.graph import add_messages
+from pydantic import BaseModel, Field
 
 
 class InputState(TypedDict):
     topic: Optional[str]
-    template_schema: dict[str, Any]
-    "The json schema defines the information the agent is tasked with filling out."
     info: Optional[dict[str, Any]]  # This is primarily populated by the agent
     "The info state tracks the current extracted data for the given topic, conforming to the provided schema."
+
+
+class Info(BaseModel):
+    """Information to """
+    ceo: str
+    revenue: int = Field(description="revenue in millions")
 
 
 class State(InputState):

@@ -1,7 +1,15 @@
 {
-  "dependencies": ["."],
+  "dockerfile_lines": [],
   "graphs": {
     "agent": "./src/enrichment_agent/graph.py:graph"
   },
-  "env": ".env"
+  "env": [
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "TAVILY_API_KEY"
+  ],
+  "python_version": "3.11",
+  "dependencies": [
+    "."
+  ]
 }

@@ -9,6 +9,7 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.tools import InjectedToolArg
 from langgraph.prebuilt import InjectedState
 from langchain_core.runnables import RunnableConfig
+from enrichment_agent.state import State, InputState, OutputState, Info
 
 
 async def search(
@@ -49,8 +50,9 @@ async def scrape_website(
         async with session.get(url) as response:
             content = await response.text()
 
+    template_schema = Info.schema_json()
     p = _INFO_PROMPT.format(
-        info=json.dumps(state["template_schema"], indent=2),
+        info=json.dumps(template_schema, indent=2),
         url=url,
         content=content,
     )

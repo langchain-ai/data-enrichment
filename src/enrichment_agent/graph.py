@@ -2,7 +2,7 @@ import json
 from typing import List, Literal, Optional, cast, Dict, Any
 
 from enrichment_agent.configuration import Configuration
-from enrichment_agent.state import State, InputState, OutputState
+from enrichment_agent.state import State, InputState, OutputState, Info
 from enrichment_agent.utils import init_model
 from enrichment_agent.tools import scrape_website, search
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage, BaseMessage
@@ -34,19 +34,15 @@ Topic: {topic}"""
 async def call_model(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
-    info_tool = {
-        "name": "Info",
-        "description": "Call this when you have gathered all the relevant info",
-        "parameters": state["template_schema"],
-    }
+    template_schema = Info.schema_json()
 
     p = main_prompt.format(
-        info=json.dumps(state["template_schema"], indent=2), topic=state["topic"]
+        info=json.dumps(template_schema, indent=2), topic=state["topic"]
     )
     messages = [HumanMessage(content=p)] + state["messages"]
     raw_model = init_model(config)
 
-    model = raw_model.bind_tools([scrape_website, search, info_tool])
+    model = raw_model.bind_tools([scrape_website, search, Info])
     response = cast(AIMessage, await model.ainvoke(messages))
 
     info = None
@@ -71,8 +67,10 @@ class InfoIsSatisfactory(BaseModel):
 async def call_checker(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
+
+    template_schema = Info.schema_json()
     p = main_prompt.format(
-        info=json.dumps(state["template_schema"], indent=2), topic=state["topic"]
+        info=json.dumps(template_schema, indent=2), topic=state["topic"]
     )
     messages = [HumanMessage(content=p)] + state["messages"][:-1]
     presumed_info = state["info"]
