@@ -10,6 +10,7 @@ from langchain_core.tools import InjectedToolArg
 from langgraph.prebuilt import InjectedState
 from langchain_core.runnables import RunnableConfig
 from enrichment_agent.state import State, InputState, OutputState, Info
+from langchain_core.runnables import chain
 
 
 async def search(
@@ -38,6 +39,19 @@ Based on the website content below, jot down some notes about the website.
 {content}
 </Website content>"""
 
+@chain
+async def extract(state, config):
+
+    raw_model = init_model(config)
+    p = _INFO_PROMPT.format(
+        info=state['info'],
+        url=state['url'],
+        content=state['content'],
+    )
+    result = await raw_model.ainvoke(p)
+    return str(result.content)
+
+
 
 async def scrape_website(
     url: str,
@@ -51,11 +65,11 @@ async def scrape_website(
             content = await response.text()
 
     template_schema = Info.schema_json()
-    p = _INFO_PROMPT.format(
-        info=json.dumps(template_schema, indent=2),
-        url=url,
-        content=content,
+
+    return await extract.ainvoke(
+        {
+        "info":json.dumps(template_schema, indent=2),
+        "url":url,
+        "content":content,},
+        config=config
     )
-    raw_model = init_model(config)
-    result = await raw_model.ainvoke(p)
-    return str(result.content)
