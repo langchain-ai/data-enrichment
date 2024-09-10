@@ -5,6 +5,7 @@ from typing_extensions import Annotated
 import aiohttp
 from enrichment_agent.configuration import Configuration
 from enrichment_agent.utils import init_model
+from enrichment_agent.state import State
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.tools import InjectedToolArg
 from langgraph.prebuilt import InjectedState
@@ -41,7 +42,7 @@ Based on the website content below, jot down some notes about the website.
 async def scrape_website(
     url: str,
     *,
-    state: Annotated[dict[str, Any], InjectedState],
+    state: Annotated[State, InjectedState],
     config: Annotated[RunnableConfig, InjectedToolArg],
 ) -> str:
     """Return a natural language response from the provided URL"""
@@ -50,7 +51,7 @@ async def scrape_website(
             content = await response.text()
 
     p = _INFO_PROMPT.format(
-        info=json.dumps(state["template_schema"], indent=2),
+        info=json.dumps(state.template_schema, indent=2),
         url=url,
         content=content,
     )

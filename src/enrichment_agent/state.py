@@ -1,16 +1,22 @@
-from typing import Any, List, Optional, TypedDict, Annotated
+import operator
+from dataclasses import dataclass, field
+from typing import Annotated, Any, List, Optional
+
 from langchain_core.messages import BaseMessage
 from langgraph.graph import add_messages
 
 
-class InputState(TypedDict):
-    topic: Optional[str]
+@dataclass(kw_only=True)
+class InputState:
+    topic: str
     template_schema: dict[str, Any]
     "The json schema defines the information the agent is tasked with filling out."
-    info: Optional[dict[str, Any]]  # This is primarily populated by the agent
+    # This is primarily populated by the agent
+    info: Optional[dict[str, Any]] = field(default=None)
     "The info state tracks the current extracted data for the given topic, conforming to the provided schema."
 
 
+@dataclass(kw_only=True)
 class State(InputState):
     """
     A graph's STate defines three main things:
@@ -20,7 +26,7 @@ class State(InputState):
     See [Reducers](https://langchain-ai.github.io/langgraphjs/concepts/low_level/#reducers) for more information.
     """
 
-    messages: Annotated[List[BaseMessage], add_messages]
+    messages: Annotated[List[BaseMessage], add_messages] = field(default_factory=list)
     """
     Messages track the primary execution state of the agent.
 
@@ -50,11 +56,14 @@ class State(InputState):
         message from `right` will replace the message from `left`.
         """
 
+    loop_step: Annotated[int, operator.add] = field(default=0)
+
     # Feel free to add additional attributes to your state as needed.
     # Common examples include retrieved documents, extracted entities, API connections, etc.
 
 
-class OutputState(TypedDict):
+@dataclass(kw_only=True)
+class OutputState:
     """
     Represents the subset of the graph's state that is returned to the end user.
 

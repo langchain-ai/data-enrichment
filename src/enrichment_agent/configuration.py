@@ -14,6 +14,7 @@ class Configuration:
     model_name: str = "claude-3-5-sonnet-20240620"
     max_search_results: int = 10
     max_info_tool_calls: int = 3
+    max_loops: int = 6
 
     @classmethod
     def from_runnable_config(

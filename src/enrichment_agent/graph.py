@@ -37,13 +37,13 @@ async def call_model(
     info_tool = {
         "name": "Info",
         "description": "Call this when you have gathered all the relevant info",
-        "parameters": state["template_schema"],
+        "parameters": state.template_schema,
     }
 
     p = main_prompt.format(
-        info=json.dumps(state["template_schema"], indent=2), topic=state["topic"]
+        info=json.dumps(state.template_schema, indent=2), topic=state.topic
     )
-    messages = [HumanMessage(content=p)] + state["messages"]
+    messages = [HumanMessage(content=p)] + state.messages
     raw_model = init_model(config)
 
     model = raw_model.bind_tools([scrape_website, search, info_tool])
@@ -56,7 +56,12 @@ async def call_model(
                 info = tool_call["args"]
                 break
 
-    return {"messages": [response], "info": info}
+    return {
+        "messages": [response],
+        "info": info,
+        # Add 1 to the step count
+        "loop_step": 1,
+    }
 
 
 class InfoIsSatisfactory(BaseModel):
@@ -72,10 +77,10 @@ async def call_checker(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
     p = main_prompt.format(
-        info=json.dumps(state["template_schema"], indent=2), topic=state["topic"]
+        info=json.dumps(state.template_schema, indent=2), topic=state.topic
     )
-    messages = [HumanMessage(content=p)] + state["messages"][:-1]
-    presumed_info = state["info"]
+    messages = [HumanMessage(content=p)] + state.messages[:-1]
+    presumed_info = state.info
     checker_prompt = """I am thinking of calling the info tool with the info below. \
 Is this good? Give your reasoning as well. \
 You can encourage the Assistant to look at specific URLs if that seems relevant, or do more searches.
@@ -87,7 +92,7 @@ If you don't think it is good, you should be very specific about what could be i
     raw_model = init_model(config)
     bound_model = raw_model.with_structured_output(InfoIsSatisfactory)
     response = cast(InfoIsSatisfactory, await bound_model.ainvoke(messages))
-    last_message = state["messages"][-1]
+    last_message = state.messages[-1]
     if not isinstance(last_message, AIMessage):
         raise ValueError(
             f"{call_checker.__name__} expects the last message in the state to be an AI message with tool calls."
@@ -104,6 +109,7 @@ If you don't think it is good, you should be very specific about what could be i
                         tool_call_id=last_message.tool_calls[0]["id"],
                         content=f"Invalid response: {e}",
                         name="Info",
+                        status="error",
                     )
                 ]
             }
@@ -115,13 +121,14 @@ If you don't think it is good, you should be very specific about what could be i
                     content=str(response),
                     name="Info",
                     additional_kwargs={"artifact": response.dict()},
+                    status="error",
                 )
             ]
         }
 
 
 def create_correction_response(state: State) -> Dict[str, List[BaseMessage]]:
-    last_message = state["messages"][-1]
+    last_message = state.messages[-1]
     if isinstance(last_message, AIMessage) and last_message.tool_calls:
         return {
             "messages": [
@@ -143,12 +150,9 @@ def create_correction_response(state: State) -> Dict[str, List[BaseMessage]]:
 
 
 def route_after_agent(
-    state: State,
+    state: State, config: RunnableConfig
 ) -> Literal["create_correction_response", "call_checker", "tools", "__end__"]:
-    last_message = state["messages"][-1]
-    num_rounds = sum(
-        1 for m in state["messages"] if isinstance(m, ToolMessage) and m.name == "Info"
-    )
+    last_message = state.messages[-1]
 
     if (
         not isinstance(last_message, AIMessage)
@@ -160,17 +164,26 @@ def route_after_agent(
     ):
         return "create_correction_response"
     elif last_message.tool_calls[0]["name"] == "Info":
-        if num_rounds > 2:
-            return "__end__"
         return "call_checker"
     else:
         return "tools"
 
 
-def route_after_checker(state: State) -> Literal["__end__", "call_model"]:
-    if state["info"]:
+def route_after_checker(
+    state: State, config: RunnableConfig
+) -> Literal["__end__", "call_model"]:
+    configurable = Configuration.from_runnable_config(config)
+    last_message = state.messages
+
+    if state.loop_step < configurable.max_loops:
+        if not state.info:
+            return "call_model"
+        if isinstance(last_message, ToolMessage) and last_message.status == "error":
+            # Research deemed unsatisfactory
+            return "call_model"
+        return "call_model"
+    else:
         return "__end__"
-    return "call_model"
 
 
 # Create the graph
@@ -189,3 +202,6 @@ workflow.add_edge("create_correction_response", "call_model")
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
+if __name__ == "__main__":
+    print(graph.input_schema.schema())
