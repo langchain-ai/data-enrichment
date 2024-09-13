@@ -1,12 +1,12 @@
 [project]
-name = "lgtemplate-enrichment-agent"
+name = "enrichment-agent"
 version = "0.0.1"
 description = "An agent that populates and enriches custom schemas"
 authors = [
     { name = "William Fu-Hinthorn", email = "13333726+hinthornw@users.noreply.github.com" },
 ]
-license = { text = "MIT" }
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.9"
 dependencies = [
     "langgraph>=0.2.19",
@@ -26,11 +26,23 @@ requires = ["setuptools>=73.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["*"]
+packages = ["enrichment_agent"]
+[tool.setuptools.package-dir]
+"enrichment_agent" = "src/enrichment_agent"
 
 [tool.setuptools.package-data]
 "*" = ["py.typed"]
+
+[tool.ruff]
+lint.select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "I",    # isort
+    "D",    # pydocstyle
+    "D401", # First line should be in imperative mood
+    "T201",
+    "UP",
+]
+lint.ignore = ["UP006", "UP007", "UP035", "D417", "E501"]
+[tool.ruff.lint.pydocstyle]
+convention = "google"

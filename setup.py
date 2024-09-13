@@ -1,5 +1,6 @@
 import os
 import shutil
+
 from setuptools import setup
 from setuptools.command.build_py import build_py
 

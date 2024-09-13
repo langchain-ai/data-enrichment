@@ -1,15 +1,16 @@
 import json
 from typing import Any, Optional, cast
-from typing_extensions import Annotated
 
 import aiohttp
-from enrichment_agent.configuration import Configuration
-from enrichment_agent.utils import init_model
-from enrichment_agent.state import State
 from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import InjectedToolArg
 from langgraph.prebuilt import InjectedState
-from langchain_core.runnables import RunnableConfig
+from typing_extensions import Annotated
+
+from enrichment_agent.configuration import Configuration
+from enrichment_agent.state import State
+from enrichment_agent.utils import init_model
 
 
 async def search(

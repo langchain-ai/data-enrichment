@@ -1,6 +1,7 @@
 """Define the configurable parameters for the agent."""
 
 from __future__ import annotations
+
 from dataclasses import dataclass, fields
 from typing import Optional
 

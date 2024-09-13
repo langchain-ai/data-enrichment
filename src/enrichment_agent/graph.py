@@ -1,32 +1,17 @@
 import json
-from typing import List, Literal, Optional, cast, Dict, Any
+from typing import Any, Dict, List, Literal, Optional, cast
 
-from enrichment_agent.configuration import Configuration
-from enrichment_agent.state import State, InputState, OutputState
-from enrichment_agent.utils import init_model
-from enrichment_agent.tools import scrape_website, search
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage, BaseMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode
 from pydantic import BaseModel, Field
 
-main_prompt = """You are doing web research on behalf of a user. You are trying to figure out this information:
-
-<info>
-{info}
-</info>
-
-You have access to the following tools:
-
-- `Search`: call a search tool and get back some results
-- `ScrapeWebsite`: scrape a website and get relevant notes about the given request. This will update the notes above.
-- `Info`: call this when you are done and have gathered all the relevant info
-
-Here is the information you have about the topic you are researching:
-
-Topic: {topic}"""
-
+from enrichment_agent import prompts
+from enrichment_agent.configuration import Configuration
+from enrichment_agent.state import InputState, OutputState, State
+from enrichment_agent.tools import scrape_website, search
+from enrichment_agent.utils import init_model
 
 # Define the nodes
 
@@ -40,7 +25,7 @@ async def call_model(
         "parameters": state.template_schema,
     }
 
-    p = main_prompt.format(
+    p = prompts.MAIN_PROMPT.format(
         info=json.dumps(state.template_schema, indent=2), topic=state.topic
     )
     messages = [HumanMessage(content=p)] + state.messages
@@ -76,7 +61,7 @@ class InfoIsSatisfactory(BaseModel):
 async def call_checker(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
-    p = main_prompt.format(
+    p = prompts.MAIN_PROMPT.format(
         info=json.dumps(state.template_schema, indent=2), topic=state.topic
     )
     messages = [HumanMessage(content=p)] + state.messages[:-1]
