@@ -2,20 +2,38 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from typing import Optional
 
 from langchain_core.runnables import RunnableConfig, ensure_config
+
+from enrichment_agent import prompts
 
 
 @dataclass(kw_only=True)
 class Configuration:
     """The configuration for the agent."""
 
-    model_name: str = "claude-3-5-sonnet-20240620"
+    model_name: str = "anthropic/claude-3-5-sonnet-20240620"
+    """The name of the language model to use for the agent.
+    
+    Should be in the form: provider/model-name.
+    """
+
+    prompt: str = field(default=prompts.MAIN_PROMPT)
+    """The main prompt template to use for the agent's interactions.
+    
+    Expects two f-string arguments: {info} and {topic}.
+    """
+
     max_search_results: int = 10
+    """The maximum number of search results to return for each search query."""
+
     max_info_tool_calls: int = 3
+    """The maximum number of times the Info tool can be called during a single interaction."""
+
     max_loops: int = 6
+    """The maximum number of interaction loops allowed before the agent terminates."""
 
     @classmethod
     def from_runnable_config(

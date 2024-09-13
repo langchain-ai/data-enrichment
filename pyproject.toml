@@ -29,6 +29,8 @@ build-backend = "setuptools.build_meta"
 packages = ["enrichment_agent"]
 [tool.setuptools.package-dir]
 "enrichment_agent" = "src/enrichment_agent"
+"langgraph.templates.enrichment_agent" = "src/enrichment_agent"
+
 
 [tool.setuptools.package-data]
 "*" = ["py.typed"]

@@ -25,13 +25,14 @@ async def call_agent_model(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
     """Call the primary LLM to decide whether and how to continue researching."""
+    configuration = Configuration.from_runnable_config(config)
     info_tool = {
         "name": "Info",
         "description": "Call this when you have gathered all the relevant info",
         "parameters": state.template_schema,
     }
 
-    p = prompts.MAIN_PROMPT.format(
+    p = configuration.prompt.format(
         info=json.dumps(state.template_schema, indent=2), topic=state.topic
     )
     messages = [HumanMessage(content=p)] + state.messages

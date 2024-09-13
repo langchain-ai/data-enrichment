@@ -1,30 +1,35 @@
 import pytest
+from langsmith import unit
 
 from enrichment_agent import graph
 
-template_schema = {
-    "type": "object",
-    "properties": {
-        "founder": {
-            "type": "string",
-            "description": "The name of the company founder.",
+
+@pytest.fixture
+def template_schema():
+    return {
+        "type": "object",
+        "properties": {
+            "founder": {
+                "type": "string",
+                "description": "The name of the company founder.",
+            },
+            "websiteUrl": {
+                "type": "string",
+                "description": "Website URL of the company, e.g.: https://openai.com/, or https://microsoft.com",
+            },
+            "products_sold": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "A list of products sold by the company.",
+            },
         },
-        "websiteUrl": {
-            "type": "string",
-            "description": "Website URL of the company, e.g.: https://openai.com/, or https://microsoft.com",
-        },
-        "products_sold": {
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "A list of products sold by the company.",
-        },
-    },
-    "required": ["founder", "websiteUrl", "products_sold"],
-}
+        "required": ["founder", "websiteUrl", "products_sold"],
+    }
 
 
 @pytest.mark.asyncio
-async def test_researcher_simple_runthrough() -> None:
+@unit
+async def test_researcher_simple_runthrough(template_schema: dict) -> None:
     res = await graph.ainvoke(
         {
             "topic": "LangChain",
