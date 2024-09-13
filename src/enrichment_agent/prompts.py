@@ -1,3 +1,5 @@
+"""Default prompts used in this project."""
+
 MAIN_PROMPT = """You are doing web research on behalf of a user. You are trying to figure out this information:
 
 <info>

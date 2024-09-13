@@ -21,9 +21,10 @@ from enrichment_agent.utils import init_model
 # Define the nodes
 
 
-async def call_model(
+async def call_agent_model(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
+    """Call the primary LLM to decide whether and how to continue researching."""
     info_tool = {
         "name": "Info",
         "description": "Call this when you have gathered all the relevant info",
@@ -55,6 +56,8 @@ async def call_model(
 
 
 class InfoIsSatisfactory(BaseModel):
+    """Validate whether the current extracted info is satisfactory and complete."""
+
     reason: List[str] = Field(
         description="First, provide reasoning for why this is either good or bad as a final result. Must include at least 3 reasons."
     )
@@ -66,6 +69,7 @@ class InfoIsSatisfactory(BaseModel):
 async def call_checker(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
+    """Validate the quality of the data enrichment agent's calls."""
     p = prompts.MAIN_PROMPT.format(
         info=json.dumps(state.template_schema, indent=2), topic=state.topic
     )
@@ -118,6 +122,7 @@ If you don't think it is good, you should be very specific about what could be i
 
 
 def create_correction_response(state: State) -> Dict[str, List[BaseMessage]]:
+    """Return a message to fix an invalid tool call."""
     last_message = state.messages[-1]
     if isinstance(last_message, AIMessage) and last_message.tool_calls:
         return {
@@ -140,8 +145,9 @@ def create_correction_response(state: State) -> Dict[str, List[BaseMessage]]:
 
 
 def route_after_agent(
-    state: State, config: RunnableConfig
+    state: State,
 ) -> Literal["create_correction_response", "call_checker", "tools", "__end__"]:
+    """Schedule the next node after the agent."""
     last_message = state.messages[-1]
 
     if (
@@ -161,17 +167,19 @@ def route_after_agent(
 
 def route_after_checker(
     state: State, config: RunnableConfig
-) -> Literal["__end__", "call_model"]:
+) -> Literal["__end__", "call_agent_model"]:
+    """Schedule the next node after the checker."""
     configurable = Configuration.from_runnable_config(config)
     last_message = state.messages
 
     if state.loop_step < configurable.max_loops:
         if not state.info:
-            return "call_model"
+            return "call_agent_model"
         if isinstance(last_message, ToolMessage) and last_message.status == "error":
             # Research deemed unsatisfactory
-            return "call_model"
-        return "call_model"
+            return "call_agent_model"
+        # It's great!
+        return "__end__"
     else:
         return "__end__"
 
@@ -180,15 +188,15 @@ def route_after_checker(
 workflow = StateGraph(
     State, input=InputState, output=OutputState, config_schema=Configuration
 )
-workflow.add_node(call_model)
+workflow.add_node(call_agent_model)
 workflow.add_node(call_checker)
 workflow.add_node(create_correction_response)
 workflow.add_node("tools", ToolNode([search, scrape_website]))
-workflow.add_edge("__start__", "call_model")
-workflow.add_conditional_edges("call_model", route_after_agent)
-workflow.add_edge("tools", "call_model")
+workflow.add_edge("__start__", "call_agent_model")
+workflow.add_conditional_edges("call_agent_model", route_after_agent)
+workflow.add_edge("tools", "call_agent_model")
 workflow.add_conditional_edges("call_checker", route_after_checker)
-workflow.add_edge("create_correction_response", "call_model")
+workflow.add_edge("create_correction_response", "call_agent_model")
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"

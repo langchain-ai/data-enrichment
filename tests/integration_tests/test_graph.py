@@ -1,4 +1,5 @@
 import pytest
+
 from enrichment_agent import graph
 
 template_schema = {
@@ -23,7 +24,7 @@ template_schema = {
 
 
 @pytest.mark.asyncio
-async def test_researcher_simple_runthrough():
+async def test_researcher_simple_runthrough() -> None:
     res = await graph.ainvoke(
         {
             "topic": "LangChain",
