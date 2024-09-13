@@ -1,3 +1,9 @@
+"""State definitions.
+
+State is the interface between the graph and end user as well as the
+data model used internally by the graph.
+"""
+
 import operator
 from dataclasses import dataclass, field
 from typing import Annotated, Any, List, Optional
@@ -8,22 +14,26 @@ from langgraph.graph import add_messages
 
 @dataclass(kw_only=True)
 class InputState:
+    """Input state defines the interface between the graph and the user (external API)."""
+
     topic: str
+    "The topic for which the agent is tasked to gather information."
+
     template_schema: dict[str, Any]
     "The json schema defines the information the agent is tasked with filling out."
-    # This is primarily populated by the agent
+
     info: Optional[dict[str, Any]] = field(default=None)
-    "The info state tracks the current extracted data for the given topic, conforming to the provided schema."
+    "The info state tracks the current extracted data for the given topic, conforming to the provided schema. This is primarily populated by the agent."
 
 
 @dataclass(kw_only=True)
 class State(InputState):
-    """
-    A graph's STate defines three main things:
+    """A graph's State defines three main things.
+
     1. The structure of the data to be passed between nodes (which "channels" to read from/write to and their types)
     2. Default values for each field
     3. Reducers for the state's fields. Reducers are functions that determine how to apply updates to the state.
-    See [Reducers](https://langchain-ai.github.io/langgraphjs/concepts/low_level/#reducers) for more information.
+    See [Reducers](https://langchain-ai.github.io/langgraph/concepts/low_level/#reducers) for more information.
     """
 
     messages: Annotated[List[BaseMessage], add_messages] = field(default_factory=list)
@@ -64,8 +74,7 @@ class State(InputState):
 
 @dataclass(kw_only=True)
 class OutputState:
-    """
-    Represents the subset of the graph's state that is returned to the end user.
+    """The response object for the end user.
 
     This class defines the structure of the output that will be provided
     to the user after the graph's execution is complete.

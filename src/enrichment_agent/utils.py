@@ -1,10 +1,13 @@
-from langchain_core.messages import AnyMessage
+"""Utility functions used in our graph."""
+
 from typing import Optional
 
-from enrichment_agent.configuration import Configuration
 from langchain.chat_models import init_chat_model
-from langchain_core.runnables import RunnableConfig
 from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import AnyMessage
+from langchain_core.runnables import RunnableConfig
+
+from enrichment_agent.configuration import Configuration
 
 
 def get_message_text(msg: AnyMessage) -> str:
@@ -22,4 +25,10 @@ def get_message_text(msg: AnyMessage) -> str:
 def init_model(config: Optional[RunnableConfig] = None) -> BaseChatModel:
     """Initialize the configured chat model."""
     configuration = Configuration.from_runnable_config(config)
-    return init_chat_model(configuration.model_name)
+    fully_specified_name = configuration.model_name
+    if "/" in fully_specified_name:
+        provider, model = fully_specified_name.split("/", maxsplit=1)
+    else:
+        provider = None
+        model = fully_specified_name
+    return init_chat_model(model, model_provider=provider)

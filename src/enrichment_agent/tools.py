@@ -1,23 +1,34 @@
+"""Tools for data enrichment.
+
+This module contains functions that are directly exposed to the LLM as tools.
+These tools can be used for tasks such as web searching and scraping.
+Users can edit and extend these tools as needed.
+"""
+
 import json
 from typing import Any, Optional, cast
-from typing_extensions import Annotated
 
 import aiohttp
-from enrichment_agent.configuration import Configuration
-from enrichment_agent.utils import init_model
-from enrichment_agent.state import State
 from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import InjectedToolArg
 from langgraph.prebuilt import InjectedState
-from langchain_core.runnables import RunnableConfig
+from typing_extensions import Annotated
+
+from enrichment_agent.configuration import Configuration
+from enrichment_agent.state import State
+from enrichment_agent.utils import init_model
 
 
 async def search(
     query: str, *, config: Annotated[RunnableConfig, InjectedToolArg]
 ) -> Optional[list[dict[str, Any]]]:
-    """A search engine optimized for comprehensive, accurate, and trusted results.
-    Useful for when you need to answer questions about current events.
-    Input should be a search query."""
+    """Search for general results.
+
+    This function performs a search using the Tavily search engine, which is designed
+    to provide comprehensive, accurate, and trusted results. It's particularly useful
+    for answering questions about current events.
+    """
     configuration = Configuration.from_runnable_config(config)
     wrapped = TavilySearchResults(max_results=configuration.max_search_results)
     result = await wrapped.ainvoke({"query": query})
@@ -45,7 +56,7 @@ async def scrape_website(
     state: Annotated[State, InjectedState],
     config: Annotated[RunnableConfig, InjectedToolArg],
 ) -> str:
-    """Return a natural language response from the provided URL"""
+    """Scrape and summarize content from a given URL."""
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             content = await response.text()
