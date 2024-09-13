@@ -1,13 +1,25 @@
 import pytest
 from enrichment_agent import graph
-from pydantic import BaseModel, Field
 
-
-class EnrichmentSchema(BaseModel):
-    founder: str = Field(description="The name of the company founder.")
-    websiteUrl: str = Field(
-        description="Website URL of the company, e.g.: https://openai.com/, or https://microsoft.com"
-    )
+template_schema = {
+    "type": "object",
+    "properties": {
+        "founder": {
+            "type": "string",
+            "description": "The name of the company founder.",
+        },
+        "websiteUrl": {
+            "type": "string",
+            "description": "Website URL of the company, e.g.: https://openai.com/, or https://microsoft.com",
+        },
+        "products_sold": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "A list of products sold by the company.",
+        },
+    },
+    "required": ["founder", "websiteUrl", "products_sold"],
+}
 
 
 @pytest.mark.asyncio
@@ -15,7 +27,7 @@ async def test_researcher_simple_runthrough():
     res = await graph.ainvoke(
         {
             "topic": "LangChain",
-            "template_schema": EnrichmentSchema.model_json_schema(),
+            "template_schema": template_schema,
         }
     )
 

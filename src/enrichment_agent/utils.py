@@ -1,3 +1,5 @@
+"""Utility functions used in our graph."""
+
 from typing import Optional
 
 from langchain.chat_models import init_chat_model
@@ -23,4 +25,10 @@ def get_message_text(msg: AnyMessage) -> str:
 def init_model(config: Optional[RunnableConfig] = None) -> BaseChatModel:
     """Initialize the configured chat model."""
     configuration = Configuration.from_runnable_config(config)
-    return init_chat_model(configuration.model_name)
+    fully_specified_name = configuration.model_name
+    if "/" in fully_specified_name:
+        provider, model = fully_specified_name.split("/", maxsplit=1)
+    else:
+        provider = None
+        model = fully_specified_name
+    return init_chat_model(model, model_provider=provider)

@@ -21,7 +21,6 @@ The enrichment agent:
 
 By default, it's set up to gather information based on the user-provided schema passed through the `template_schema` key in the state.
 
-
 ## Getting Started
 
 This template was designed for [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio). To use, clone this repo locally and open the folder in LangGraph Studio.
@@ -38,31 +37,6 @@ To set up:
 2. Install the required dependencies (`poetry install`)
 3. Customize whatever you'd like in the code.
 4. Run the script with your research topic as input.
-
-## Repo Structure
-
-```txt
-├── LICENSE
-├── README.md
-├── langgraph.json
-├── pyproject.toml
-├── src
-│   └── enrichment_agent
-│       ├── __init__.py
-│       ├── configuration.py
-│       ├── graph.py
-│       ├── state.py
-│       ├── tools.py
-│       └── utils.py
-├── static
-│   └── studio_ui.png
-└── tests
-    ├── integration_tests
-    │   ├── __init__.py
-    │   └── test_graph.py
-    └── unit_tests
-        └── __init__.py
-```
 
 ## Development
 

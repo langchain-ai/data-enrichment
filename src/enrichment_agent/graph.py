@@ -1,3 +1,8 @@
+"""Define a data enrichment agent.
+
+Works with a chat model with tool calling support.
+"""
+
 import json
 from typing import Any, Dict, List, Literal, Optional, cast
 
@@ -178,7 +183,7 @@ workflow = StateGraph(
 workflow.add_node(call_model)
 workflow.add_node(call_checker)
 workflow.add_node(create_correction_response)
-workflow.add_node(ToolNode([search, scrape_website]))
+workflow.add_node("tools", ToolNode([search, scrape_website]))
 workflow.add_edge("__start__", "call_model")
 workflow.add_conditional_edges("call_model", route_after_agent)
 workflow.add_edge("tools", "call_model")
@@ -187,6 +192,3 @@ workflow.add_edge("create_correction_response", "call_model")
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
-
-if __name__ == "__main__":
-    print(graph.input_schema.schema())
