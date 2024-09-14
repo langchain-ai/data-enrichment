@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, fields
-from typing import Optional
+from typing import Annotated, Optional
 
 from langchain_core.runnables import RunnableConfig, ensure_config
 
@@ -14,7 +14,9 @@ from enrichment_agent import prompts
 class Configuration:
     """The configuration for the agent."""
 
-    model_name: str = "anthropic/claude-3-5-sonnet-20240620"
+    model_name: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = (
+        "anthropic/claude-3-5-sonnet-20240620"
+    )
     """The name of the language model to use for the agent.
     
     Should be in the form: provider/model-name.

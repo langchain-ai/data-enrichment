@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import pytest
 from langsmith import unit
 
@@ -5,7 +7,7 @@ from enrichment_agent import graph
 
 
 @pytest.fixture
-def template_schema():
+def template_schema() -> Dict[str, Any]:
     return {
         "type": "object",
         "properties": {
@@ -29,7 +31,7 @@ def template_schema():
 
 @pytest.mark.asyncio
 @unit
-async def test_researcher_simple_runthrough(template_schema: dict) -> None:
+async def test_researcher_simple_runthrough(template_schema: Dict[str, Any]) -> None:
     res = await graph.ainvoke(
         {
             "topic": "LangChain",
