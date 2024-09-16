@@ -14,28 +14,42 @@ from enrichment_agent import prompts
 class Configuration:
     """The configuration for the agent."""
 
-    model_name: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = (
-        "anthropic/claude-3-5-sonnet-20240620"
+    model_name: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = field(
+        default="anthropic/claude-3-5-sonnet-20240620",
+        metadata={
+            "description": "The name of the language model to use for the agent. "
+            "Should be in the form: provider/model-name."
+        },
     )
-    """The name of the language model to use for the agent.
-    
-    Should be in the form: provider/model-name.
-    """
 
-    prompt: str = field(default=prompts.MAIN_PROMPT)
-    """The main prompt template to use for the agent's interactions.
-    
-    Expects two f-string arguments: {info} and {topic}.
-    """
+    prompt: str = field(
+        default=prompts.MAIN_PROMPT,
+        metadata={
+            "description": "The main prompt template to use for the agent's interactions. "
+            "Expects two f-string arguments: {info} and {topic}."
+        },
+    )
 
-    max_search_results: int = 10
-    """The maximum number of search results to return for each search query."""
+    max_search_results: int = field(
+        default=10,
+        metadata={
+            "description": "The maximum number of search results to return for each search query."
+        },
+    )
 
-    max_info_tool_calls: int = 3
-    """The maximum number of times the Info tool can be called during a single interaction."""
+    max_info_tool_calls: int = field(
+        default=3,
+        metadata={
+            "description": "The maximum number of times the Info tool can be called during a single interaction."
+        },
+    )
 
-    max_loops: int = 6
-    """The maximum number of interaction loops allowed before the agent terminates."""
+    max_loops: int = field(
+        default=6,
+        metadata={
+            "description": "The maximum number of interaction loops allowed before the agent terminates."
+        },
+    )
 
     @classmethod
     def from_runnable_config(

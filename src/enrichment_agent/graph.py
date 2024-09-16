@@ -29,16 +29,16 @@ async def call_agent_model(
     info_tool = {
         "name": "Info",
         "description": "Call this when you have gathered all the relevant info",
-        "parameters": state.template_schema,
+        "parameters": state.row_schema,
     }
 
     p = configuration.prompt.format(
-        info=json.dumps(state.template_schema, indent=2), topic=state.topic
+        info=json.dumps(state.row_schema, indent=2), topic=state.topic
     )
     messages = [HumanMessage(content=p)] + state.messages
     raw_model = init_model(config)
 
-    model = raw_model.bind_tools([scrape_website, search, info_tool])
+    model = raw_model.bind_tools([scrape_website, search, info_tool], tool_choice="any")
     response = cast(AIMessage, await model.ainvoke(messages))
 
     info = None
@@ -47,9 +47,19 @@ async def call_agent_model(
             if tool_call["name"] == "Info":
                 info = tool_call["args"]
                 break
-
+    if info is not None:
+        # The agent is submitting their answer;
+        # ensure it isnt' erroneously attempting to simultaneously perform research
+        response.tool_calls = [
+            next(tc for tc in response.tool_calls if tc["name"] == "Info")
+        ]
+    response_messages: List[BaseMessage] = [response]
+    if not response.tool_calls:  # If LLM didn't respect the tool_choice
+        response_messages.append(
+            HumanMessage(content="Please respond by calling one of the provided tools.")
+        )
     return {
-        "messages": [response],
+        "messages": response_messages,
         "info": info,
         # Add 1 to the step count
         "loop_step": 1,
@@ -67,12 +77,12 @@ class InfoIsSatisfactory(BaseModel):
     )
 
 
-async def call_checker(
+async def reflect(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
     """Validate the quality of the data enrichment agent's calls."""
     p = prompts.MAIN_PROMPT.format(
-        info=json.dumps(state.template_schema, indent=2), topic=state.topic
+        info=json.dumps(state.row_schema, indent=2), topic=state.topic
     )
     messages = [HumanMessage(content=p)] + state.messages[:-1]
     presumed_info = state.info
@@ -90,7 +100,7 @@ If you don't think it is good, you should be very specific about what could be i
     last_message = state.messages[-1]
     if not isinstance(last_message, AIMessage):
         raise ValueError(
-            f"{call_checker.__name__} expects the last message in the state to be an AI message with tool calls."
+            f"{reflect.__name__} expects the last message in the state to be an AI message with tool calls."
             f" Got: {type(last_message)}"
         )
 
@@ -122,46 +132,16 @@ If you don't think it is good, you should be very specific about what could be i
         }
 
 
-def create_correction_response(state: State) -> Dict[str, List[BaseMessage]]:
-    """Return a message to fix an invalid tool call."""
-    last_message = state.messages[-1]
-    if isinstance(last_message, AIMessage) and last_message.tool_calls:
-        return {
-            "messages": [
-                ToolMessage(
-                    tool_call_id=call["id"],
-                    content="You must call one, and only one, tool!",
-                    name=call["name"],
-                )
-                for call in last_message.tool_calls
-            ]
-        }
-    return {
-        "messages": [
-            HumanMessage(
-                content="You must call one, and only one, tool! You can call the `Info` tool to finish the task."
-            )
-        ]
-    }
-
-
 def route_after_agent(
     state: State,
-) -> Literal["create_correction_response", "call_checker", "tools", "__end__"]:
+) -> Literal["reflect", "tools", "call_agent_model", "__end__"]:
     """Schedule the next node after the agent."""
     last_message = state.messages[-1]
 
-    if (
-        not isinstance(last_message, AIMessage)
-        or not last_message.tool_calls
-        or (
-            len(last_message.tool_calls) != 1
-            and any(tc["name"] == "Info" for tc in last_message.tool_calls)
-        )
-    ):
-        return "create_correction_response"
-    elif last_message.tool_calls[0]["name"] == "Info":
-        return "call_checker"
+    if not isinstance(last_message, AIMessage):
+        return "call_agent_model"
+    if last_message.tool_calls and last_message.tool_calls[0]["name"] == "Info":
+        return "reflect"
     else:
         return "tools"
 
@@ -190,14 +170,12 @@ workflow = StateGraph(
     State, input=InputState, output=OutputState, config_schema=Configuration
 )
 workflow.add_node(call_agent_model)
-workflow.add_node(call_checker)
-workflow.add_node(create_correction_response)
+workflow.add_node(reflect)
 workflow.add_node("tools", ToolNode([search, scrape_website]))
 workflow.add_edge("__start__", "call_agent_model")
 workflow.add_conditional_edges("call_agent_model", route_after_agent)
 workflow.add_edge("tools", "call_agent_model")
-workflow.add_conditional_edges("call_checker", route_after_checker)
-workflow.add_edge("create_correction_response", "call_agent_model")
+workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"

@@ -6,7 +6,7 @@ from langsmith import unit
 from enrichment_agent import graph
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def template_schema() -> Dict[str, Any]:
     return {
         "type": "object",
