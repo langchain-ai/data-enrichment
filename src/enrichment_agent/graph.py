@@ -29,11 +29,11 @@ async def call_agent_model(
     info_tool = {
         "name": "Info",
         "description": "Call this when you have gathered all the relevant info",
-        "parameters": state.row_schema,
+        "parameters": state.extraction_schema,
     }
 
     p = configuration.prompt.format(
-        info=json.dumps(state.row_schema, indent=2), topic=state.topic
+        info=json.dumps(state.extraction_schema, indent=2), topic=state.topic
     )
     messages = [HumanMessage(content=p)] + state.messages
     raw_model = init_model(config)
@@ -82,7 +82,7 @@ async def reflect(
 ) -> Dict[str, Any]:
     """Validate the quality of the data enrichment agent's calls."""
     p = prompts.MAIN_PROMPT.format(
-        info=json.dumps(state.row_schema, indent=2), topic=state.topic
+        info=json.dumps(state.extraction_schema, indent=2), topic=state.topic
     )
     messages = [HumanMessage(content=p)] + state.messages[:-1]
     presumed_info = state.info

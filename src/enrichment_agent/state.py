@@ -19,7 +19,7 @@ class InputState:
     topic: str
     "The topic for which the agent is tasked to gather information."
 
-    row_schema: dict[str, Any]
+    extraction_schema: dict[str, Any]
     "The json schema defines the information the agent is tasked with filling out."
 
     info: Optional[dict[str, Any]] = field(default=None)
