@@ -49,7 +49,7 @@ async def call_agent_model(
                 break
     if info is not None:
         # The agent is submitting their answer;
-        # ensure it isnt' erroneously attempting to simultaneously perform research
+        # ensure it isn't erroneously attempting to simultaneously perform research
         response.tool_calls = [
             next(tc for tc in response.tool_calls if tc["name"] == "Info")
         ]
