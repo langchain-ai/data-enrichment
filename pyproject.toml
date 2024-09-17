@@ -45,6 +45,7 @@ lint.select = [
     "T201",
     "UP",
 ]
+include = ["*.py", "*.pyi", "*.ipynb"]
 lint.ignore = ["UP006", "UP007", "UP035", "D417", "E501"]
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D", "UP"]
