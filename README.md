@@ -84,7 +84,7 @@ End setup instructions
 ## How to customize
 
 1. **Customize research targets**: Provide a custom `extraction_schema` when calling the graph to gather different types of information.
-2. **Select a different model**: We default to anthropic (sonnet-35). You can select a compatible chat model using `provider/model-name` via configuration. Example: `openai/gpt-4o-mini`.
+2. **Select a different model**: We default to anthropic (sonnet-35). You can select a compatible chat model using `provider/model-name` via configuration. Example: `anthropic/claude-3-haiku-20240307`.
 3. **Customize the prompt**: We provide a default prompt in [prompts.py](./src/enrichment_agent/prompts.py). You can easily update this via configuration in the studio.
 
 You can also quickly extend this template by:
