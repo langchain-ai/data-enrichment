@@ -3,23 +3,21 @@
 [![CI](https://github.com/langchain-ai/data-enrichment/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/langchain-ai/data-enrichment/actions/workflows/unit-tests.yml)
 [![Integration Tests](https://github.com/langchain-ai/data-enrichment/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/langchain-ai/data-enrichment/actions/workflows/integration-tests.yml)
 
-This is a starter project to help you get started with developing a data enrichment agent using [LangGraph](https://github.com/langchain-ai/langgraph) in [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio).
+Producing structured results (e.g., to populate a database or spreadsheet) from open-ended research (e.g., web research) is a common use case that LLM-powered agents are well-suited to handle. Here, we provide a general template for this kind of "data enrichment agent" agent using [LangGraph](https://github.com/langchain-ai/langgraph) in [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio). It contains an example graph exported from `src/enrichment_agent/graph.py` that implements a research assistant capable of automatically gathering information on various topics from the web and structuring the results into a user-defined JSON format.
 
-![Graph view in LangGraph studio UI](./static/studio.png)
-
-It contains an example graph exported from `src/enrichment_agent/graph.py` that implements a research assistant capable of automatically gathering information on various topics from the web.
+![Overview of agent](./static/overview.png)
 
 ## What it does
 
-The enrichment agent:
+The enrichment agent defined in `src/enrichment_agent/graph.py` performs the following steps:
 
-1. Takes a research **topic** and requested **extraction_schema** as input. The 
-2. Searches the web for relevant information
+1. Takes a research **topic** and requested **extraction_schema** as user input. 
+2. The `call_agent_model` graph node uses an LLM with bound tools (defined in `tools.py`) to perform web search (using [Tavily](https://tavily.com/)) or web scraping. 
 3. Reads and extracts key details from websites
 4. Organizes the findings into the requested structured format
 5. Validates the gathered information for completeness and accuracy
 
-By default, it's set up to gather information based on the user-provided schema passed through the `extraction_schema` key in the state.
+![Graph view in LangGraph studio UI](./static/studio.png)
 
 ## Getting Started
 
@@ -87,19 +85,56 @@ OPENAI_API_KEY=your-api-key
 End setup instructions
 -->
 
-3. Customize whatever you'd like in the code.
-4. Open the folder LangGraph Studio!
+3. Consider a research topic and desired extraction schema.
+
+As an example, here is a research topic we can consider.
+```
+"Top 5 chip providers for LLM Training"
+```
+
+And here is a desired extraction schema.
+```json
+"extraction_schema": {
+"type": "object",
+"properties": {
+"companies": {
+"type": "string",
+"description": "Names of top chip providers for LLM training"
+},
+"technologies": {
+"type": "string",
+"description": "Brief summary of key chip technologies used for LLM training"
+},
+"market_share": {
+"type": "string",
+"description": "Overview of market share distribution among top providers"
+},
+"future_outlook": {
+"type": "string",
+"description": "Brief summary of future prospects and developments in the field"
+}
+},
+"required": ["companies", "technologies", "market_share", "future_outlook"]
+}
+```
+4. Open the folder LangGraph Studio, and input `topic` and `extraction_schema`.
+
+![Results In Studio](./static/studio_example.png) 
 
 ## How to customize
 
-1. **Customize research targets**: Provide a custom `extraction_schema` when calling the graph to gather different types of information.
+1. **Customize research targets**: Provide a custom JSON `extraction_schema` when calling the graph to gather different types of information. 
 2. **Select a different model**: We default to anthropic (sonnet-35). You can select a compatible chat model using `provider/model-name` via configuration. Example: `openai/gpt-4o-mini`.
-3. **Customize the prompt**: We provide a default prompt in [prompts.py](./src/enrichment_agent/prompts.py). You can easily update this via configuration in the studio.
+3. **Customize the prompt**: We provide a default prompt in [prompts.py](./src/enrichment_agent/prompts.py). You can easily update this via configuration.
+
+For quick prototyping, these configurations can be set in the studio UI.
+
+![Config In Studio](./static/config.png) 
 
 You can also quickly extend this template by:
 
 - Adding new tools and API connections in [tools.py](./src/enrichment_agent/tools.py). These are just any python functions.
-- Adding additional steps in [graph.py](./src/enrichment_agent/graph.py). Concerned about hallucinatio
+- Adding additional steps in [graph.py](./src/enrichment_agent/graph.py).
 
 ## Development
 
