@@ -62,7 +62,7 @@ async def scrape_website(
             content = await response.text()
 
     p = _INFO_PROMPT.format(
-        info=json.dumps(state.template_schema, indent=2),
+        info=json.dumps(state.extraction_schema, indent=2),
         url=url,
         content=content,
     )

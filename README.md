@@ -13,13 +13,13 @@ It contains an example graph exported from `src/enrichment_agent/graph.py` that 
 
 The enrichment agent:
 
-1. Takes a research **topic** and requested **template_schema** as input
+1. Takes a research **topic** and requested **extraction_schema** as input. The 
 2. Searches the web for relevant information
 3. Reads and extracts key details from websites
 4. Organizes the findings into the requested structured format
 5. Validates the gathered information for completeness and accuracy
 
-By default, it's set up to gather information based on the user-provided schema passed through the `template_schema` key in the state.
+By default, it's set up to gather information based on the user-provided schema passed through the `extraction_schema` key in the state.
 
 ## Getting Started
 
@@ -92,7 +92,7 @@ End setup instructions
 
 ## How to customize
 
-1. **Customize research targets**: Provide a custom `template_schema` when calling the graph to gather different types of information.
+1. **Customize research targets**: Provide a custom `extraction_schema` when calling the graph to gather different types of information.
 2. **Select a different model**: We default to anthropic (sonnet-35). You can select a compatible chat model using `provider/model-name` via configuration. Example: `openai/gpt-4o-mini`.
 3. **Customize the prompt**: We provide a default prompt in [prompts.py](./src/enrichment_agent/prompts.py). You can easily update this via configuration in the studio.
 
