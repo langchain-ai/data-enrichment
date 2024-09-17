@@ -25,8 +25,7 @@ async def search(
     *, 
     config: Annotated[RunnableConfig, InjectedToolArg]
 ) -> Optional[list[dict[str, Any]]]:
-    """
-    Perform a general web search using the Tavily search engine.
+    """Perform a general web search using the Tavily search engine.
 
     This asynchronous function executes the following steps:
     1. Extracts configuration from the provided RunnableConfig.
@@ -61,8 +60,7 @@ async def scrape_website(
     state: Annotated[State, InjectedState],
     config: Annotated[RunnableConfig, InjectedToolArg],
 ) -> str:
-    """
-    Scrape and summarize content from a given URL.
+    """Scrape and summarize content from a given URL.
 
     This asynchronous function performs the following steps:
     1. Fetches the content of the specified URL.

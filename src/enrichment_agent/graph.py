@@ -18,12 +18,12 @@ from enrichment_agent.state import InputState, OutputState, State
 from enrichment_agent.tools import scrape_website, search
 from enrichment_agent.utils import init_model
 
+
 # Define the nodes
 async def call_agent_model(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
-    """
-    Call the primary Language Model (LLM) to decide on the next research action.
+    """Call the primary Language Model (LLM) to decide on the next research action.
 
     This asynchronous function performs the following steps:
     1. Initializes configuration and sets up the 'Info' tool, which is the user-defined extraction schema.
@@ -47,7 +47,6 @@ async def call_agent_model(
         - If the LLM calls the 'Info' tool, it's considered as submitting the final answer.
         - If the LLM doesn't call any tool, a prompt to use a tool is appended to the messages.
     """
-
     # Load configuration from the provided RunnableConfig
     configuration = Configuration.from_runnable_config(config)
 
@@ -82,7 +81,7 @@ async def call_agent_model(
                 break
     if info is not None:
         # The agent is submitting their answer;
-        # ensure it isnt' erroneously attempting to simultaneously perform research
+        # ensure it isn't erroneously attempting to simultaneously perform research
         response.tool_calls = [
             next(tc for tc in response.tool_calls if tc["name"] == "Info")
         ]
@@ -98,6 +97,7 @@ async def call_agent_model(
         "loop_step": 1,
     }
 
+
 class InfoIsSatisfactory(BaseModel):
     """Validate whether the current extracted info is satisfactory and complete."""
 
@@ -112,8 +112,7 @@ class InfoIsSatisfactory(BaseModel):
 async def reflect(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
-    """
-    Validate the quality of the data enrichment agent's output.
+    """Validate the quality of the data enrichment agent's output.
 
     This asynchronous function performs the following steps:
     1. Prepares the initial prompt using the main prompt template.
@@ -195,8 +194,7 @@ If you don't think it is good, you should be very specific about what could be i
 def route_after_agent(
     state: State,
 ) -> Literal["reflect", "tools", "call_agent_model", "__end__"]:
-    """
-    Schedule the next node after the agent's action.
+    """Schedule the next node after the agent's action.
 
     This function determines the next step in the research process based on the
     last message in the state. It handles three main scenarios:
@@ -210,7 +208,7 @@ def route_after_agent(
                        the message history.
 
     Returns:
-        Literal["reflect", "tools", "call_agent_model", "__end__"]: 
+        Literal["reflect", "tools", "call_agent_model", "__end__"]:
             - "reflect": If the agent has submitted info for review.
             - "tools": If the agent has called a tool other than "Info".
             - "call_agent_model": If an unexpected message type is encountered.
@@ -225,7 +223,7 @@ def route_after_agent(
     """
     last_message = state.messages[-1]
 
-    # "If for some reason the last message is not an AIMessage (due to a bug or unexpected behavior elsewhere in the code), 
+    # "If for some reason the last message is not an AIMessage (due to a bug or unexpected behavior elsewhere in the code),
     # it ensures the system doesn't crash but instead tries to recover by calling the agent model again.
     if not isinstance(last_message, AIMessage):
         return "call_agent_model"
@@ -236,11 +234,11 @@ def route_after_agent(
     else:
         return "tools"
 
+
 def route_after_checker(
     state: State, config: RunnableConfig
 ) -> Literal["__end__", "call_agent_model"]:
-    """
-    Schedule the next node after the checker's evaluation.
+    """Schedule the next node after the checker's evaluation.
 
     This function determines whether to continue the research process or end it
     based on the checker's evaluation and the current state of the research.
@@ -252,7 +250,7 @@ def route_after_checker(
                                  the maximum number of allowed loops.
 
     Returns:
-        Literal["__end__", "call_agent_model"]: 
+        Literal["__end__", "call_agent_model"]:
             - "__end__": If the research process should terminate.
             - "call_agent_model": If further research is needed.
 
@@ -281,6 +279,7 @@ def route_after_checker(
         return "__end__"
     else:
         return "__end__"
+
 
 # Create the graph
 workflow = StateGraph(
