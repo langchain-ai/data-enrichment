@@ -18,30 +18,47 @@ from enrichment_agent.state import InputState, OutputState, State
 from enrichment_agent.tools import scrape_website, search
 from enrichment_agent.utils import init_model
 
+
 # Define the nodes
-
-
 async def call_agent_model(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
-    """Call the primary LLM to decide whether and how to continue researching."""
+    """Call the primary Language Model (LLM) to decide on the next research action.
+
+    This asynchronous function performs the following steps:
+    1. Initializes configuration and sets up the 'Info' tool, which is the user-defined extraction schema.
+    2. Prepares the prompt and message history for the LLM.
+    3. Initializes and configures the LLM with available tools.
+    4. Invokes the LLM and processes its response.
+    5. Handles the LLM's decision to either continue research or submit final info.
+    """
+    # Load configuration from the provided RunnableConfig
     configuration = Configuration.from_runnable_config(config)
+
+    # Define the 'Info' tool, which is the user-defined extraction schema
     info_tool = {
         "name": "Info",
         "description": "Call this when you have gathered all the relevant info",
         "parameters": state.extraction_schema,
     }
 
+    # Format the prompt defined in prompts.py with the extraction schema and topic
     p = configuration.prompt.format(
         info=json.dumps(state.extraction_schema, indent=2), topic=state.topic
     )
-    messages = [HumanMessage(content=p)] + state.messages
-    raw_model = init_model(config)
 
+    # Create the messages list with the formatted prompt and the previous messages
+    messages = [HumanMessage(content=p)] + state.messages
+
+    # Initialize the raw model with the provided configuration and bind the tools
+    raw_model = init_model(config)
     model = raw_model.bind_tools([scrape_website, search, info_tool], tool_choice="any")
     response = cast(AIMessage, await model.ainvoke(messages))
 
+    # Initialize info to None
     info = None
+
+    # Check if the response has tool calls
     if response.tool_calls:
         for tool_call in response.tool_calls:
             if tool_call["name"] == "Info":
@@ -75,12 +92,26 @@ class InfoIsSatisfactory(BaseModel):
     is_satisfactory: bool = Field(
         description="After providing your reasoning, provide a value indicating whether the result is satisfactory. If not, you will continue researching."
     )
+    improvement_instructions: Optional[str] = Field(
+        description="If the result is not satisfactory, provide clear and specific instructions on what needs to be improved or added to make the information satisfactory."
+        " This should include details on missing information, areas that need more depth, or specific aspects to focus on in further research.",
+        default=None,
+    )
 
 
 async def reflect(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
-    """Validate the quality of the data enrichment agent's calls."""
+    """Validate the quality of the data enrichment agent's output.
+
+    This asynchronous function performs the following steps:
+    1. Prepares the initial prompt using the main prompt template.
+    2. Constructs a message history for the model.
+    3. Prepares a checker prompt to evaluate the presumed info.
+    4. Initializes and configures a language model with structured output.
+    5. Invokes the model to assess the quality of the gathered information.
+    6. Processes the model's response and determines if the info is satisfactory.
+    """
     p = prompts.MAIN_PROMPT.format(
         info=json.dumps(state.extraction_schema, indent=2), topic=state.topic
     )
@@ -104,28 +135,27 @@ If you don't think it is good, you should be very specific about what could be i
             f" Got: {type(last_message)}"
         )
 
-    if response.is_satisfactory:
-        try:
-            return {"info": presumed_info}
-        except Exception as e:
-            return {
-                "messages": [
-                    ToolMessage(
-                        tool_call_id=last_message.tool_calls[0]["id"],
-                        content=f"Invalid response: {e}",
-                        name="Info",
-                        status="error",
-                    )
-                ]
-            }
+    if response.is_satisfactory and presumed_info:
+        return {
+            "info": presumed_info,
+            "messages": [
+                ToolMessage(
+                    tool_call_id=last_message.tool_calls[0]["id"],
+                    content="\n".join(response.reason),
+                    name="Info",
+                    additional_kwargs={"artifact": response.model_dump()},
+                    status="success",
+                )
+            ],
+        }
     else:
         return {
             "messages": [
                 ToolMessage(
                     tool_call_id=last_message.tool_calls[0]["id"],
-                    content=str(response),
+                    content=f"Unsatisfactory response:\n{response.improvement_instructions}",
                     name="Info",
-                    additional_kwargs={"artifact": response.dict()},
+                    additional_kwargs={"artifact": response.model_dump()},
                     status="error",
                 )
             ]
@@ -135,13 +165,25 @@ If you don't think it is good, you should be very specific about what could be i
 def route_after_agent(
     state: State,
 ) -> Literal["reflect", "tools", "call_agent_model", "__end__"]:
-    """Schedule the next node after the agent."""
+    """Schedule the next node after the agent's action.
+
+    This function determines the next step in the research process based on the
+    last message in the state. It handles three main scenarios:
+
+    1. Error recovery: If the last message is unexpectedly not an AIMessage.
+    2. Info submission: If the agent has called the "Info" tool to submit findings.
+    3. Continued research: If the agent has called any other tool.
+    """
     last_message = state.messages[-1]
 
+    # "If for some reason the last message is not an AIMessage (due to a bug or unexpected behavior elsewhere in the code),
+    # it ensures the system doesn't crash but instead tries to recover by calling the agent model again.
     if not isinstance(last_message, AIMessage):
         return "call_agent_model"
+    # If the "Into" tool was called, then the model provided its extraction output. Reflect on the result
     if last_message.tool_calls and last_message.tool_calls[0]["name"] == "Info":
         return "reflect"
+    # The last message is a tool call that is not "Info" (extraction output)
     else:
         return "tools"
 
@@ -149,14 +191,22 @@ def route_after_agent(
 def route_after_checker(
     state: State, config: RunnableConfig
 ) -> Literal["__end__", "call_agent_model"]:
-    """Schedule the next node after the checker."""
+    """Schedule the next node after the checker's evaluation.
+
+    This function determines whether to continue the research process or end it
+    based on the checker's evaluation and the current state of the research.
+    """
     configurable = Configuration.from_runnable_config(config)
-    last_message = state.messages
+    last_message = state.messages[-1]
 
     if state.loop_step < configurable.max_loops:
         if not state.info:
             return "call_agent_model"
-        if isinstance(last_message, ToolMessage) and last_message.status == "error":
+        if not isinstance(last_message, ToolMessage):
+            raise ValueError(
+                f"{route_after_checker.__name__} expected a tool messages. Received: {type(last_message)}."
+            )
+        if last_message.status == "error":
             # Research deemed unsatisfactory
             return "call_agent_model"
         # It's great!

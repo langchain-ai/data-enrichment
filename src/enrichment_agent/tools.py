@@ -23,11 +23,10 @@ from enrichment_agent.utils import init_model
 async def search(
     query: str, *, config: Annotated[RunnableConfig, InjectedToolArg]
 ) -> Optional[list[dict[str, Any]]]:
-    """Search for general results.
+    """Query a search engine.
 
-    This function performs a search using the Tavily search engine, which is designed
-    to provide comprehensive, accurate, and trusted results. It's particularly useful
-    for answering questions about current events.
+    This function queries the web to fetch comprehensive, accurate, and trusted results. It's particularly useful
+    for answering questions about current events. Provide as much context in the query as needed to ensure high recall.
     """
     configuration = Configuration.from_runnable_config(config)
     wrapped = TavilySearchResults(max_results=configuration.max_search_results)
@@ -56,7 +55,11 @@ async def scrape_website(
     state: Annotated[State, InjectedState],
     config: Annotated[RunnableConfig, InjectedToolArg],
 ) -> str:
-    """Scrape and summarize content from a given URL."""
+    """Scrape and summarize content from a given URL.
+
+    Returns:
+        str: A summary of the scraped content, tailored to the extraction schema.
+    """
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             content = await response.text()
