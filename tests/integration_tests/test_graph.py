@@ -1,8 +1,9 @@
 from typing import Any, Dict
 
 import pytest
-from enrichment_agent import graph
 from langsmith import unit
+
+from enrichment_agent import graph
 
 
 @pytest.fixture(scope="function")

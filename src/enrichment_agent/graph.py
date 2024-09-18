@@ -130,28 +130,27 @@ If you don't think it is good, you should be very specific about what could be i
             f" Got: {type(last_message)}"
         )
 
-    if response.is_satisfactory:
-        try:
-            return {"info": presumed_info}
-        except Exception as e:
-            return {
-                "messages": [
-                    ToolMessage(
-                        tool_call_id=last_message.tool_calls[0]["id"],
-                        content=f"Invalid response: {e}",
-                        name="Info",
-                        status="error",
-                    )
-                ]
-            }
+    if response.is_satisfactory and presumed_info:
+        return {
+            "info": presumed_info,
+            "messages": [
+                ToolMessage(
+                    tool_call_id=last_message.tool_calls[0]["id"],
+                    content="\n".join(response.reason),
+                    name="Info",
+                    additional_kwargs={"artifact": response.model_dump()},
+                    status="success",
+                )
+            ],
+        }
     else:
         return {
             "messages": [
                 ToolMessage(
                     tool_call_id=last_message.tool_calls[0]["id"],
-                    content=str(response),
+                    content="Unsatisfactory response:\n" + "\n".join(response.reason),
                     name="Info",
-                    additional_kwargs={"artifact": response.dict()},
+                    additional_kwargs={"artifact": response.model_dump()},
                     status="error",
                 )
             ]
@@ -193,12 +192,16 @@ def route_after_checker(
     based on the checker's evaluation and the current state of the research.
     """
     configurable = Configuration.from_runnable_config(config)
-    last_message = state.messages
+    last_message = state.messages[-1]
 
     if state.loop_step < configurable.max_loops:
         if not state.info:
             return "call_agent_model"
-        if isinstance(last_message, ToolMessage) and last_message.status == "error":
+        if not isinstance(last_message, ToolMessage):
+            raise ValueError(
+                f"{route_after_checker.__name__} expected a tool messages. Received: {type(last_message)}."
+            )
+        if last_message.status == "error":
             # Research deemed unsatisfactory
             return "call_agent_model"
         # It's great!
