@@ -12,7 +12,7 @@ Producing structured results (e.g., to populate a database or spreadsheet) from 
 
 The enrichment agent defined in `src/enrichment_agent/graph.py` performs the following steps:
 
-1. Takes a research **topic** and requested **extraction_schema** as input. The
+1. Takes a research **topic** and requested **extraction_schema** as input.
 2. Searches the web for relevant information
 3. Reads and extracts key details from websites
 4. Organizes the findings into the requested structured format
