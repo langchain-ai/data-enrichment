@@ -25,7 +25,7 @@ def get_message_text(msg: AnyMessage) -> str:
 def init_model(config: Optional[RunnableConfig] = None) -> BaseChatModel:
     """Initialize the configured chat model."""
     configuration = Configuration.from_runnable_config(config)
-    fully_specified_name = configuration.model_name
+    fully_specified_name = configuration.model
     if "/" in fully_specified_name:
         provider, model = fully_specified_name.split("/", maxsplit=1)
     else:

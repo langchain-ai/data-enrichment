@@ -67,7 +67,7 @@ async def scrape_website(
     p = _INFO_PROMPT.format(
         info=json.dumps(state.extraction_schema, indent=2),
         url=url,
-        content=content,
+        content=content[:40_000],
     )
     raw_model = init_model(config)
     result = await raw_model.ainvoke(p)

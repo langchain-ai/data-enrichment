@@ -19,7 +19,6 @@ from enrichment_agent.tools import scrape_website, search
 from enrichment_agent.utils import init_model
 
 
-# Define the nodes
 async def call_agent_model(
     state: State, *, config: Optional[RunnableConfig] = None
 ) -> Dict[str, Any]:
@@ -115,6 +114,12 @@ async def reflect(
     p = prompts.MAIN_PROMPT.format(
         info=json.dumps(state.extraction_schema, indent=2), topic=state.topic
     )
+    last_message = state.messages[-1]
+    if not isinstance(last_message, AIMessage):
+        raise ValueError(
+            f"{reflect.__name__} expects the last message in the state to be an AI message with tool calls."
+            f" Got: {type(last_message)}"
+        )
     messages = [HumanMessage(content=p)] + state.messages[:-1]
     presumed_info = state.info
     checker_prompt = """I am thinking of calling the info tool with the info below. \
@@ -128,13 +133,6 @@ If you don't think it is good, you should be very specific about what could be i
     raw_model = init_model(config)
     bound_model = raw_model.with_structured_output(InfoIsSatisfactory)
     response = cast(InfoIsSatisfactory, await bound_model.ainvoke(messages))
-    last_message = state.messages[-1]
-    if not isinstance(last_message, AIMessage):
-        raise ValueError(
-            f"{reflect.__name__} expects the last message in the state to be an AI message with tool calls."
-            f" Got: {type(last_message)}"
-        )
-
     if response.is_satisfactory and presumed_info:
         return {
             "info": presumed_info,
