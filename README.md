@@ -84,10 +84,10 @@ As an example, here is a research topic we can consider.
 "Top 5 chip providers for LLM Training"
 ```
 
-And here is a desired extraction schema.
+And here is a desired extraction schema (pasted in as "`extraction_schema`"):
 
 ```json
-"extraction_schema": {
+{
     "type": "object",
     "properties": {
         "companies": {
