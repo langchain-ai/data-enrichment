@@ -1,0 +1,21 @@
+{
+    "name": "refinery",
+    "dockerFile": "Dockerfile",
+  
+    // Automatically run Poetry install after build
+    "postCreateCommand": "poetry install --no-root",
+  
+    // Load your secrets from .env
+    "envFile": ".env",
+  
+    "forwardPorts": [5173],
+  
+    "customizations": {
+      "vscode": {
+        "settings": {
+          "python.defaultInterpreterPath": "/usr/local/bin/python"
+        }
+      }
+    }
+  }
+  

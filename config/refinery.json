@@ -1,0 +1,5 @@
+{
+  "schema_path": "schemas/dgh_schema.json",
+  "model_name": "gpt-4o-mini",
+  "temperature": 0.1
+} 

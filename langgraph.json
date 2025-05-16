@@ -1,7 +1,7 @@
 {
   "dependencies": ["."],
   "graphs": {
-    "agent": "./src/enrichment_agent/graph.py:graph"
+    "enrichment_agent": "enrichment_agent.graph:graph"
   },
   "env": ".env"
 }

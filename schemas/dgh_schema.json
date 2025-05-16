@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DatasetGenerationExample",
+  "type": "object",
+  "required": ["import_run_id", "role_extracts", "diff_changes", "approved"],
+  "properties": {
+    "import_run_id": { "type": "string", "format": "uuid" },
+    "role_extracts": { "type": "array", "items": { "type": "object" } },
+    "diff_changes":  { "type": "array", "items": { "type": "object" } },
+    "approved":      { "type": "boolean" },
+    "notes":         { "type": "string" }
+  }
+} 

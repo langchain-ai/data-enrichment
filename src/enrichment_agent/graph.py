@@ -3,7 +3,11 @@
 Works with a chat model with tool calling support.
 """
 
-import json
+import json, pathlib
+from dgh_state import DGHState
+SETTINGS = json.load(open("config/refinery.json"))
+SCHEMA = json.load(open(SETTINGS["schema_path"]))
+
 from typing import Any, Dict, List, Literal, Optional, cast
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
