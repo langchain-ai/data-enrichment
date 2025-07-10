@@ -178,7 +178,7 @@ def route_after_agent(
     # it ensures the system doesn't crash but instead tries to recover by calling the agent model again.
     if not isinstance(last_message, AIMessage):
         return "call_agent_model"
-    # If the "Into" tool was called, then the model provided its extraction output. Reflect on the result
+    # If the "Info" tool was called, then the model provided its extraction output. Reflect on the result
     if last_message.tool_calls and last_message.tool_calls[0]["name"] == "Info":
         return "reflect"
     # The last message is a tool call that is not "Info" (extraction output)
@@ -215,7 +215,7 @@ def route_after_checker(
 
 # Create the graph
 workflow = StateGraph(
-    State, input=InputState, output=OutputState, config_schema=Configuration
+    State, input_schema=InputState, output_schema=OutputState, config_schema=Configuration
 )
 workflow.add_node(call_agent_model)
 workflow.add_node(reflect)
