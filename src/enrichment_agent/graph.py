@@ -130,7 +130,7 @@ If you don't think it is good, you should be very specific about what could be i
 {presumed_info}"""
     p1 = checker_prompt.format(presumed_info=json.dumps(presumed_info or {}, indent=2))
     messages.append(HumanMessage(content=p1))
-    raw_model = init_model(config)
+    raw_model = init_model(runtime)
     bound_model = raw_model.with_structured_output(InfoIsSatisfactory)
     response = cast(InfoIsSatisfactory, await bound_model.ainvoke(messages))
     if response.is_satisfactory and presumed_info:
@@ -227,6 +227,7 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
 
 
 
