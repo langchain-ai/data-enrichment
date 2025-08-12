@@ -4,6 +4,7 @@ import pytest
 from langsmith import unit
 
 from enrichment_agent import graph
+from enrichment_agent.context import Context
 
 
 @pytest.fixture(scope="function")
@@ -119,3 +120,4 @@ async def test_researcher_list_type(array_extraction_schema: Dict[str, Any]) -> 
     assert "overall_market_trends" in info
     assert isinstance(info["overall_market_trends"], str)
     assert len(info["overall_market_trends"]) > 0
+
