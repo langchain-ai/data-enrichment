@@ -194,10 +194,10 @@ def route_after_checker(
     This function determines whether to continue the research process or end it
     based on the checker's evaluation and the current state of the research.
     """
-    configurable = Configuration.from_runnable_config(config)
+    context = runtime.context
     last_message = state.messages[-1]
 
-    if state.loop_step < configurable.max_loops:
+    if state.loop_step < context.max_loops:
         if not state.info:
             return "call_agent_model"
         if not isinstance(last_message, ToolMessage):
@@ -227,6 +227,7 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
 
 
 
