@@ -99,7 +99,7 @@ class InfoIsSatisfactory(BaseModel):
 
 
 async def reflect(
-    state: State, *, config: Optional[RunnableConfig] = None
+    state: State, runtime: Runtime[Context]
 ) -> Dict[str, Any]:
     """Validate the quality of the data enrichment agent's output.
 
@@ -227,6 +227,7 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
 
 
 
