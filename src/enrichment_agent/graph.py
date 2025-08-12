@@ -211,7 +211,7 @@ def route_after_checker(
 
 # Create the graph
 workflow = StateGraph(
-    State, input=InputState, output=OutputState, context_schema=Context
+    State, context_schema=Context
 )
 workflow.add_node(call_agent_model)
 workflow.add_node(reflect)
@@ -223,3 +223,4 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
