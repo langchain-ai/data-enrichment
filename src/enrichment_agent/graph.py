@@ -187,7 +187,7 @@ def route_after_agent(
 
 
 def route_after_checker(
-    state: State, config: RunnableConfig
+    state: State, runtime: Runtime[Context]
 ) -> Literal["__end__", "call_agent_model"]:
     """Schedule the next node after the checker's evaluation.
 
@@ -227,6 +227,7 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
 
 
 
