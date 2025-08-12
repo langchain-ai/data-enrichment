@@ -4,16 +4,16 @@ Works with a chat model with tool calling support.
 """
 
 import json
-from typing import Any, Dict, List, Literal, Optional, cast
+from typing import Any, Dict, List, Literal, cast
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
-from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode
+from langgraph.runtime import Runtime
 from pydantic import BaseModel, Field
 
 from enrichment_agent import prompts
-from enrichment_agent.configuration import Configuration
+from enrichment_agent.context import Context
 from enrichment_agent.state import InputState, OutputState, State
 from enrichment_agent.tools import scrape_website, search
 from enrichment_agent.utils import init_model
@@ -227,3 +227,4 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
