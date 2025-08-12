@@ -47,8 +47,7 @@ async def call_agent_model(state: State, runtime: Runtime[Context]) -> Dict[str,
     # Create the messages list with the formatted prompt and the previous messages
     messages = [HumanMessage(content=p)] + state.messages
 
-    # Initialize the raw model with the runtime context and bind the tools
-    raw_model = init_model(runtime)
+    raw_model = init_model(context.model)
     model = raw_model.bind_tools([scrape_website, search, info_tool], tool_choice="any")
     response = cast(AIMessage, await model.ainvoke(messages))
 
@@ -126,7 +125,7 @@ If you don't think it is good, you should be very specific about what could be i
 {presumed_info}"""
     p1 = checker_prompt.format(presumed_info=json.dumps(presumed_info or {}, indent=2))
     messages.append(HumanMessage(content=p1))
-    raw_model = init_model(runtime)
+    raw_model = init_model(runtime.context.model)
     bound_model = raw_model.with_structured_output(InfoIsSatisfactory)
     response = cast(InfoIsSatisfactory, await bound_model.ainvoke(messages))
     if response.is_satisfactory and presumed_info:

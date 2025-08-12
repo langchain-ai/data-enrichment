@@ -3,9 +3,6 @@
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AnyMessage
-from langgraph.runtime import Runtime
-
-from enrichment_agent.context import Context
 
 
 def get_message_text(msg: AnyMessage) -> str:
@@ -20,13 +17,11 @@ def get_message_text(msg: AnyMessage) -> str:
         return "".join(txts).strip()
 
 
-def init_model(runtime: Runtime[Context]) -> BaseChatModel:
+def init_model(model_name: str) -> BaseChatModel:
     """Initialize the configured chat model."""
-    context = runtime.context
-    fully_specified_name = context.model
-    if "/" in fully_specified_name:
-        provider, model = fully_specified_name.split("/", maxsplit=1)
+    if "/" in model_name:
+        provider, model = model_name.split("/", maxsplit=1)
     else:
         provider = None
-        model = fully_specified_name
+        model = model_name
     return init_chat_model(model, model_provider=provider)

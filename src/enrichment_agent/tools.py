@@ -65,7 +65,6 @@ async def scrape_website(
         url=url,
         content=content[:40_000],
     )
-    runtime = get_runtime(Context)
-    raw_model = init_model(runtime)
+    raw_model = init_model(get_runtime(Context).context.model)
     result = await raw_model.ainvoke(p)
     return str(result.content)
