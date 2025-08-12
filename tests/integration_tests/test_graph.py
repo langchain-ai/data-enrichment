@@ -37,7 +37,7 @@ async def test_researcher_simple_runthrough(extraction_schema: Dict[str, Any]) -
         {
             "topic": "LangChain",
             "extraction_schema": extraction_schema,
-        },
+        },  # type: ignore
         context=Context(),
     )
 
@@ -94,8 +94,7 @@ async def test_researcher_list_type(array_extraction_schema: Dict[str, Any]) -> 
         {
             "topic": "Top 5 chip providers for LLM training",
             "extraction_schema": array_extraction_schema,
-        },
-        context=Context(),
+        },  # type: ignore
     )
     # Check that nvidia is amongst them lol
     info = res["info"]

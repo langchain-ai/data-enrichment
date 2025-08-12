@@ -48,7 +48,7 @@ class Context:
         },
     )
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Fetch env vars for attributes that were not passed as args."""
         for f in fields(self):
             if not f.init:
