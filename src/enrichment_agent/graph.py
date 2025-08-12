@@ -42,7 +42,7 @@ async def call_agent_model(
     }
 
     # Format the prompt defined in prompts.py with the extraction schema and topic
-    p = configuration.prompt.format(
+    p = context.prompt.format(
         info=json.dumps(state.extraction_schema, indent=2), topic=state.topic
     )
 
@@ -227,6 +227,7 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
 
 
 
