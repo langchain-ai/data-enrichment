@@ -23,7 +23,7 @@ async def call_agent_model(state: State, runtime: Runtime[Context]) -> Dict[str,
     """Call the primary Language Model (LLM) to decide on the next research action.
 
     This asynchronous function performs the following steps:
-    1. Initializes configuration and sets up the 'Info' tool, which is the user-defined extraction schema.
+    1. Initializes context and sets up the 'Info' tool, which is the user-defined extraction schema.
     2. Prepares the prompt and message history for the LLM.
     3. Initializes and configures the LLM with available tools.
     4. Invokes the LLM and processes its response.
