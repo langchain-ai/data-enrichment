@@ -20,7 +20,7 @@ from enrichment_agent.utils import init_model
 
 
 async def call_agent_model(
-    state: State, *, config: Optional[RunnableConfig] = None
+    state: State, runtime: Runtime[Context]
 ) -> Dict[str, Any]:
     """Call the primary Language Model (LLM) to decide on the next research action.
 
@@ -227,4 +227,5 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
 
