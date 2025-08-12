@@ -21,15 +21,15 @@ from enrichment_agent.utils import init_model
 
 
 async def search(
-    query: str, *, config: Annotated[RunnableConfig, InjectedToolArg]
+    query: str
 ) -> Optional[list[dict[str, Any]]]:
     """Query a search engine.
 
     This function queries the web to fetch comprehensive, accurate, and trusted results. It's particularly useful
     for answering questions about current events. Provide as much context in the query as needed to ensure high recall.
     """
-    configuration = Configuration.from_runnable_config(config)
-    wrapped = TavilySearchResults(max_results=configuration.max_search_results)
+    runtime = get_runtime(Context)
+    wrapped = TavilySearchResults(max_results=runtime.context.max_search_results)
     result = await wrapped.ainvoke({"query": query})
     return cast(list[dict[str, Any]], result)
 
@@ -72,4 +72,5 @@ async def scrape_website(
     raw_model = init_model(config)
     result = await raw_model.ainvoke(p)
     return str(result.content)
+
 
