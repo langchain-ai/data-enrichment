@@ -19,9 +19,7 @@ from enrichment_agent.tools import scrape_website, search
 from enrichment_agent.utils import init_model
 
 
-async def call_agent_model(
-    state: State, runtime: Runtime[Context]
-) -> Dict[str, Any]:
+async def call_agent_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
     """Call the primary Language Model (LLM) to decide on the next research action.
 
     This asynchronous function performs the following steps:
@@ -98,9 +96,7 @@ class InfoIsSatisfactory(BaseModel):
     )
 
 
-async def reflect(
-    state: State, runtime: Runtime[Context]
-) -> Dict[str, Any]:
+async def reflect(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
     """Validate the quality of the data enrichment agent's output.
 
     This asynchronous function performs the following steps:
@@ -227,13 +223,3 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
-
-
-
-
-
-
-
-
-
-

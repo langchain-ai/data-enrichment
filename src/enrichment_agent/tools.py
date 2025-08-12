@@ -20,9 +20,7 @@ from enrichment_agent.state import State
 from enrichment_agent.utils import init_model
 
 
-async def search(
-    query: str
-) -> Optional[list[dict[str, Any]]]:
+async def search(query: str) -> Optional[list[dict[str, Any]]]:
     """Query a search engine.
 
     This function queries the web to fetch comprehensive, accurate, and trusted results. It's particularly useful
@@ -72,6 +70,3 @@ async def scrape_website(
     raw_model = init_model(runtime)
     result = await raw_model.ainvoke(p)
     return str(result.content)
-
-
-

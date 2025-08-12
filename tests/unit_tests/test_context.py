@@ -22,4 +22,3 @@ def test_context_init_with_env_vars_and_passed_values() -> None:
     assert context.model == "passed-model"
     # Clean up
     del os.environ["MODEL"]
-
