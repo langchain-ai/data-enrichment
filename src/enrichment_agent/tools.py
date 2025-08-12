@@ -10,12 +10,12 @@ from typing import Any, Optional, cast
 
 import aiohttp
 from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import InjectedToolArg
 from langgraph.prebuilt import InjectedState
+from langgraph.runtime import get_runtime
 from typing_extensions import Annotated
 
-from enrichment_agent.configuration import Configuration
+from enrichment_agent.context import Context
 from enrichment_agent.state import State
 from enrichment_agent.utils import init_model
 
@@ -72,3 +72,4 @@ async def scrape_website(
     raw_model = init_model(config)
     result = await raw_model.ainvoke(p)
     return str(result.content)
+
