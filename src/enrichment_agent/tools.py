@@ -70,4 +70,3 @@ async def scrape_website(
     raw_model = init_model(runtime)
     result = await raw_model.ainvoke(p)
     return str(result.content)
-
