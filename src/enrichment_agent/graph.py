@@ -49,8 +49,8 @@ async def call_agent_model(
     # Create the messages list with the formatted prompt and the previous messages
     messages = [HumanMessage(content=p)] + state.messages
 
-    # Initialize the raw model with the provided configuration and bind the tools
-    raw_model = init_model(config)
+    # Initialize the raw model with the runtime context and bind the tools
+    raw_model = init_model(runtime)
     model = raw_model.bind_tools([scrape_website, search, info_tool], tool_choice="any")
     response = cast(AIMessage, await model.ainvoke(messages))
 
@@ -227,6 +227,7 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
 
 
 
