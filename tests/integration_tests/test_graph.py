@@ -37,7 +37,8 @@ async def test_researcher_simple_runthrough(extraction_schema: Dict[str, Any]) -
         {
             "topic": "LangChain",
             "extraction_schema": extraction_schema,
-        }
+        },
+        context=Context(),
     )
 
     assert res["info"] is not None
@@ -120,4 +121,5 @@ async def test_researcher_list_type(array_extraction_schema: Dict[str, Any]) -> 
     assert "overall_market_trends" in info
     assert isinstance(info["overall_market_trends"], str)
     assert len(info["overall_market_trends"]) > 0
+
 
