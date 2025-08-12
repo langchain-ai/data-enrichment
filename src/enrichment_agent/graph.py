@@ -31,8 +31,8 @@ async def call_agent_model(
     4. Invokes the LLM and processes its response.
     5. Handles the LLM's decision to either continue research or submit final info.
     """
-    # Load configuration from the provided RunnableConfig
-    configuration = Configuration.from_runnable_config(config)
+    # Access context from the runtime
+    context = runtime.context
 
     # Define the 'Info' tool, which is the user-defined extraction schema
     info_tool = {
@@ -227,5 +227,6 @@ workflow.add_conditional_edges("reflect", route_after_checker)
 
 graph = workflow.compile()
 graph.name = "ResearchTopic"
+
 
 
