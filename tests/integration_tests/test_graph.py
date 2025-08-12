@@ -94,7 +94,8 @@ async def test_researcher_list_type(array_extraction_schema: Dict[str, Any]) -> 
         {
             "topic": "Top 5 chip providers for LLM training",
             "extraction_schema": array_extraction_schema,
-        }
+        },
+        context=Context(),
     )
     # Check that nvidia is amongst them lol
     info = res["info"]
@@ -121,5 +122,6 @@ async def test_researcher_list_type(array_extraction_schema: Dict[str, Any]) -> 
     assert "overall_market_trends" in info
     assert isinstance(info["overall_market_trends"], str)
     assert len(info["overall_market_trends"]) > 0
+
 
 
