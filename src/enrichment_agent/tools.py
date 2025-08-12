@@ -53,7 +53,6 @@ async def scrape_website(
     url: str,
     *,
     state: Annotated[State, InjectedState],
-    config: Annotated[RunnableConfig, InjectedToolArg],
 ) -> str:
     """Scrape and summarize content from a given URL.
 
@@ -69,8 +68,10 @@ async def scrape_website(
         url=url,
         content=content[:40_000],
     )
-    raw_model = init_model(config)
+    runtime = get_runtime(Context)
+    raw_model = init_model(runtime)
     result = await raw_model.ainvoke(p)
     return str(result.content)
+
 
 
