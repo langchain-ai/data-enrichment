@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from enrichment_agent import prompts
 from enrichment_agent.configuration import Configuration
 from enrichment_agent.state import InputState, OutputState, State
-from enrichment_agent.tools import scrape_website, search
+from enrichment_agent.tools import perform_web_research
 from enrichment_agent.utils import init_model
 
 
@@ -51,7 +51,7 @@ async def call_agent_model(
 
     # Initialize the raw model with the provided configuration and bind the tools
     raw_model = init_model(config)
-    model = raw_model.bind_tools([scrape_website, search, info_tool], tool_choice="any")
+    model = raw_model.bind_tools([perform_web_research, info_tool], tool_choice="any")
     response = cast(AIMessage, await model.ainvoke(messages))
 
     # Initialize info to None
@@ -219,7 +219,7 @@ workflow = StateGraph(
 )
 workflow.add_node(call_agent_model)
 workflow.add_node(reflect)
-workflow.add_node("tools", ToolNode([search, scrape_website]))
+workflow.add_node("tools", ToolNode([perform_web_research]))
 workflow.add_edge("__start__", "call_agent_model")
 workflow.add_conditional_edges("call_agent_model", route_after_agent)
 workflow.add_edge("tools", "call_agent_model")

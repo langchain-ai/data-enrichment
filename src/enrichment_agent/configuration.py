@@ -51,6 +51,13 @@ class Configuration:
         },
     )
 
+    num_search_queries: int = field(
+        default=2,
+        metadata={
+            "description": "The number of search queries to generate for web search."
+        },
+    )
+
     @classmethod
     def from_runnable_config(
         cls, config: Optional[RunnableConfig] = None

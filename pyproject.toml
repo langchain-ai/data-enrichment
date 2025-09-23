@@ -4,6 +4,7 @@ version = "0.0.1"
 description = "An agent that populates and enriches custom schemas"
 authors = [
     { name = "William Fu-Hinthorn", email = "13333726+hinthornw@users.noreply.github.com" },
+    { name = "Lance Martin", email = "lance@langchain.dev" },
 ]
 readme = "README.md"
 license = { text = "MIT" }
@@ -16,6 +17,7 @@ dependencies = [
     "langchain-fireworks>=0.1.7",
     "python-dotenv>=1.0.1",
     "langchain-community>=0.2.13",
+    "tavily-python",
 ]
 
 [project.optional-dependencies]

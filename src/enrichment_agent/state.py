@@ -11,20 +11,14 @@ from typing import Annotated, Any, List, Optional
 from langchain_core.messages import BaseMessage
 from langgraph.graph import add_messages
 
-
 @dataclass(kw_only=True)
 class InputState:
     """Input state defines the interface between the graph and the user (external API)."""
-
-    topic: str
-    "The topic for which the agent is tasked to gather information."
+    companies: list[str]
+    "List of company names to research."
 
     extraction_schema: dict[str, Any]
     "The json schema defines the information the agent is tasked with filling out."
-
-    info: Optional[dict[str, Any]] = field(default=None)
-    "The info state tracks the current extracted data for the given topic, conforming to the provided schema. This is primarily populated by the agent."
-
 
 @dataclass(kw_only=True)
 class State(InputState):
