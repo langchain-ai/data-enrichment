@@ -7,32 +7,30 @@ import json
 from typing import Any, Dict, List, Literal, Optional, cast
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
-from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode
+from langgraph.runtime import Runtime
 from pydantic import BaseModel, Field
 
 from enrichment_agent import prompts
-from enrichment_agent.configuration import Configuration
-from enrichment_agent.state import InputState, OutputState, State
+from enrichment_agent.context import Context
+from enrichment_agent.state import State
 from enrichment_agent.tools import scrape_website, search
 from enrichment_agent.utils import init_model
 
 
-async def call_agent_model(
-    state: State, *, config: Optional[RunnableConfig] = None
-) -> Dict[str, Any]:
+async def call_agent_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
     """Call the primary Language Model (LLM) to decide on the next research action.
 
     This asynchronous function performs the following steps:
-    1. Initializes configuration and sets up the 'Info' tool, which is the user-defined extraction schema.
+    1. Initializes context and sets up the 'Info' tool, which is the user-defined extraction schema.
     2. Prepares the prompt and message history for the LLM.
     3. Initializes and configures the LLM with available tools.
     4. Invokes the LLM and processes its response.
     5. Handles the LLM's decision to either continue research or submit final info.
     """
-    # Load configuration from the provided RunnableConfig
-    configuration = Configuration.from_runnable_config(config)
+    # Access context from the runtime
+    context = runtime.context
 
     # Define the 'Info' tool, which is the user-defined extraction schema
     info_tool = {
@@ -42,15 +40,14 @@ async def call_agent_model(
     }
 
     # Format the prompt defined in prompts.py with the extraction schema and topic
-    p = configuration.prompt.format(
+    p = context.prompt.format(
         info=json.dumps(state.extraction_schema, indent=2), topic=state.topic
     )
 
     # Create the messages list with the formatted prompt and the previous messages
     messages = [HumanMessage(content=p)] + state.messages
 
-    # Initialize the raw model with the provided configuration and bind the tools
-    raw_model = init_model(config)
+    raw_model = init_model(context.model)
     model = raw_model.bind_tools([scrape_website, search, info_tool], tool_choice="any")
     response = cast(AIMessage, await model.ainvoke(messages))
 
@@ -98,9 +95,7 @@ class InfoIsSatisfactory(BaseModel):
     )
 
 
-async def reflect(
-    state: State, *, config: Optional[RunnableConfig] = None
-) -> Dict[str, Any]:
+async def reflect(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
     """Validate the quality of the data enrichment agent's output.
 
     This asynchronous function performs the following steps:
@@ -130,7 +125,7 @@ If you don't think it is good, you should be very specific about what could be i
 {presumed_info}"""
     p1 = checker_prompt.format(presumed_info=json.dumps(presumed_info or {}, indent=2))
     messages.append(HumanMessage(content=p1))
-    raw_model = init_model(config)
+    raw_model = init_model(runtime.context.model)
     bound_model = raw_model.with_structured_output(InfoIsSatisfactory)
     response = cast(InfoIsSatisfactory, await bound_model.ainvoke(messages))
     if response.is_satisfactory and presumed_info:
@@ -187,17 +182,17 @@ def route_after_agent(
 
 
 def route_after_checker(
-    state: State, config: RunnableConfig
+    state: State, runtime: Runtime[Context]
 ) -> Literal["__end__", "call_agent_model"]:
     """Schedule the next node after the checker's evaluation.
 
     This function determines whether to continue the research process or end it
     based on the checker's evaluation and the current state of the research.
     """
-    configurable = Configuration.from_runnable_config(config)
+    context = runtime.context
     last_message = state.messages[-1]
 
-    if state.loop_step < configurable.max_loops:
+    if state.loop_step < context.max_loops:
         if not state.info:
             return "call_agent_model"
         if not isinstance(last_message, ToolMessage):
@@ -214,9 +209,7 @@ def route_after_checker(
 
 
 # Create the graph
-workflow = StateGraph(
-    State, input=InputState, output=OutputState, config_schema=Configuration
-)
+workflow = StateGraph(State, context_schema=Context)
 workflow.add_node(call_agent_model)
 workflow.add_node(reflect)
 workflow.add_node("tools", ToolNode([search, scrape_website]))

@@ -4,6 +4,7 @@ import pytest
 from langsmith import unit
 
 from enrichment_agent import graph
+from enrichment_agent.context import Context
 
 
 @pytest.fixture(scope="function")
@@ -36,7 +37,8 @@ async def test_researcher_simple_runthrough(extraction_schema: Dict[str, Any]) -
         {
             "topic": "LangChain",
             "extraction_schema": extraction_schema,
-        }
+        },  # type: ignore
+        context=Context(),
     )
 
     assert res["info"] is not None
@@ -92,7 +94,7 @@ async def test_researcher_list_type(array_extraction_schema: Dict[str, Any]) -> 
         {
             "topic": "Top 5 chip providers for LLM training",
             "extraction_schema": array_extraction_schema,
-        }
+        },  # type: ignore
     )
     # Check that nvidia is amongst them lol
     info = res["info"]
@@ -104,9 +106,9 @@ async def test_researcher_list_type(array_extraction_schema: Dict[str, Any]) -> 
     nvidia_present = any(
         provider["name"].lower().strip() == "nvidia" for provider in info["providers"]
     )
-    assert (
-        nvidia_present
-    ), "NVIDIA should be among the top 5 chip providers for LLM training"
+    assert nvidia_present, (
+        "NVIDIA should be among the top 5 chip providers for LLM training"
+    )
 
     # Validate structure of each provider
     for provider in info["providers"]:

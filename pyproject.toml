@@ -9,7 +9,7 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"
 dependencies = [
-    "langgraph>=0.2.19",
+    "langgraph>=0.6.0,<0.7.0",
     "langchain-openai>=0.1.22",
     "langchain-anthropic>=0.1.23",
     "langchain>=0.2.14",
@@ -52,3 +52,4 @@ lint.ignore = ["UP006", "UP007", "UP035", "D417", "E501"]
 "ntbk/*" = ["D", "UP", "T201"]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+

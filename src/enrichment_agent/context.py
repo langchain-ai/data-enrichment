@@ -1,18 +1,15 @@
-"""Define the configurable parameters for the agent."""
+"""Define the runtime context information for the agent."""
 
-from __future__ import annotations
-
+import os
 from dataclasses import dataclass, field, fields
-from typing import Annotated, Optional
-
-from langchain_core.runnables import RunnableConfig, ensure_config
+from typing import Annotated
 
 from enrichment_agent import prompts
 
 
 @dataclass(kw_only=True)
-class Configuration:
-    """The configuration for the agent."""
+class Context:
+    """The runtime context for the enrichment agent."""
 
     model: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = field(
         default="anthropic/claude-3-5-sonnet-20240620",
@@ -51,12 +48,11 @@ class Configuration:
         },
     )
 
-    @classmethod
-    def from_runnable_config(
-        cls, config: Optional[RunnableConfig] = None
-    ) -> Configuration:
-        """Load configuration w/ defaults for the given invocation."""
-        config = ensure_config(config)
-        configurable = config.get("configurable") or {}
-        _fields = {f.name for f in fields(cls) if f.init}
-        return cls(**{k: v for k, v in configurable.items() if k in _fields})
+    def __post_init__(self) -> None:
+        """Fetch env vars for attributes that were not passed as args."""
+        for f in fields(self):
+            if not f.init:
+                continue
+
+            if getattr(self, f.name) == f.default:
+                setattr(self, f.name, os.environ.get(f.name.upper(), f.default))
