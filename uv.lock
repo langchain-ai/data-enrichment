@@ -1327,7 +1327,7 @@ wheels = [
 
 [[package]]
 name = "langchain-tavily"
-version = "0.2.13"
+version = "0.2.18"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1335,9 +1335,9 @@ dependencies = [
     { name = "langchain-core" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/05/75/a08ff73441fdaaef6e1ed83ee3b6747fd7c562ff772a09ebf5fe8fb252d3/langchain_tavily-0.2.13.tar.gz", hash = "sha256:97752167225b1459ffd2055bc8ffcec30658ff808dd5f7f9b2efa85ebbc7895a", size = 21842, upload-time = "2025-11-04T15:30:32.756Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d6/6c/b309ef3062b189a82463dc93553804566e71aa393f9ba8954750793c1a6f/langchain_tavily-0.2.18.tar.gz", hash = "sha256:cd7859ae1a6ce79236580ef67072ff5fc43c7ded94e7eac38ff04209ca85a320", size = 25378, upload-time = "2026-04-16T15:23:24.526Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/a2/7de8e9071b6a60cf9fe974744a2961e2dc77492d0ac29285a70b465cdb57/langchain_tavily-0.2.13-py3-none-any.whl", hash = "sha256:aa5b445c336f5f9314ab00f348554a42316af75ac839a0016442e382dd2cb1cb", size = 26025, upload-time = "2025-11-04T15:30:31.679Z" },
+    { url = "https://files.pythonhosted.org/packages/71/9c/0c043e4434b1823f0ac194f66036cbb0569275a99dcb890e0891ecd34fb2/langchain_tavily-0.2.18-py3-none-any.whl", hash = "sha256:dccf3ad1c50e2cb2a89bec11727555805c9df8abd42c1f3ad42ccad86e28aa44", size = 30814, upload-time = "2026-04-16T15:23:23.424Z" },
 ]
 
 [[package]]
