@@ -161,7 +161,7 @@ If you don't think it is good, you should be very specific about what could be i
 
 
 def route_after_agent(
-    state: State,
+    state: State, config: RunnableConfig
 ) -> Literal["reflect", "tools", "call_agent_model", "__end__"]:
     """Schedule the next node after the agent's action.
 
@@ -173,6 +173,16 @@ def route_after_agent(
     3. Continued research: If the agent has called any other tool.
     """
     last_message = state.messages[-1]
+    is_info = (
+        isinstance(last_message, AIMessage)
+        and bool(last_message.tool_calls)
+        and last_message.tool_calls[0]["name"] == "Info"
+    )
+    # Bound research the same way the checker bounds reflection: without this,
+    # a model that keeps calling tools (or never calls one) loops until the
+    # graph's recursion limit.
+    if not is_info and state.loop_step >= Configuration.from_runnable_config(config).max_loops:
+        return "__end__"
 
     # "If for some reason the last message is not an AIMessage (due to a bug or unexpected behavior elsewhere in the code),
     # it ensures the system doesn't crash but instead tries to recover by calling the agent model again.
