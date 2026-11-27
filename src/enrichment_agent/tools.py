@@ -5,6 +5,7 @@ These tools can be used for tasks such as web searching and scraping.
 Users can edit and extend these tools as needed.
 """
 
+import asyncio
 import json
 from typing import Any, Optional, cast
 
@@ -49,6 +50,10 @@ Based on the website content below, jot down some notes about the website.
 </Website content>"""
 
 
+SCRAPE_TIMEOUT_SECONDS = 30.0
+"""Total time allowed for fetching one page (aiohttp's default is 5 minutes)."""
+
+
 async def scrape_website(
     url: str,
     *,
@@ -60,9 +65,15 @@ async def scrape_website(
     Returns:
         str: A summary of the scraped content, tailored to the extraction schema.
     """
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            content = await response.text()
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=SCRAPE_TIMEOUT_SECONDS)) as session:
+            async with session.get(url) as response:
+                if response.status >= 400:
+                    return f"Could not scrape {url}: the site returned HTTP {response.status}."
+                content = await response.text()
+    except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+        # Report the failure to the model instead of ending the whole run.
+        return f"Could not scrape {url}: {type(e).__name__}: {e}"
 
     p = _INFO_PROMPT.format(
         info=json.dumps(state.extraction_schema, indent=2),
